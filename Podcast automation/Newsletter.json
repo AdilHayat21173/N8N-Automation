@@ -1,0 +1,3499 @@
+{
+  "name": "Asana",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 12
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1216,
+        -48
+      ],
+      "id": "caebf21b-f612-4251-a3a8-d6e22972db9e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://platform.riverside.fm/api/v2/recordings",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "BEARER 30b446dcacb3d6ce99551f22ab8c69cb08609d9a69bdf96a06ca49b9c8434fc4"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        -48
+      ],
+      "id": "58eb9f2a-d766-4dd6-acae-446bc4ccf941",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This node returns exactly ONE item: the newest recording by created_date\n// Works with BOTH shapes:\n// 1) items = [{json:{page, total_items, data:[{...recording...}, ...]}}, ...]  // multiple page responses\n// 2) items = [{json:{recording_id, created_date, ...}}, ...]                  // already split into recordings\n\nfunction collectRecordings(items) {\n  const out = [];\n  for (const it of items) {\n    const j = it?.json ?? {};\n    if (Array.isArray(j.data)) {\n      // Page response shape\n      for (const r of j.data) out.push(r);\n    } else if (j && j.recording_id && j.created_date) {\n      // Already-split recording shape\n      out.push(j);\n    }\n  }\n  return out;\n}\n\nconst recordings = collectRecordings(items);\n\n// If nothing, stop\nif (!recordings.length) return [];\n\n// Sort newest first by created_date\nrecordings.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));\n\n// Take the top (latest)\nconst latest = recordings[0];\n\n// Convenience: surface common transcription URLs if available\nconst transcription = latest?.transcription ?? {};\nconst tFiles = Array.isArray(transcription.files) ? transcription.files : [];\nconst transcriptTxtUrl = tFiles.find(f => f.type === 'txt')?.download_url ?? null;\nconst transcriptSrtUrl = tFiles.find(f => f.type === 'srt')?.download_url ?? null;\n\n// Return full original object + a helpful _meta block\nreturn [{\n  json: {\n    ...latest,\n    _meta: {\n      picked_by: \"created_date desc\",\n      transcript_txt_url: transcriptTxtUrl,\n      transcript_srt_url: transcriptSrtUrl\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        -48
+      ],
+      "id": "d93d1d9d-08c7-42f0-8d80-c52e947ab66c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.transcript_txt_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "BEARER 30b446dcacb3d6ce99551f22ab8c69cb08609d9a69bdf96a06ca49b9c8434fc4"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3248,
+        -64
+      ],
+      "id": "c64d941d-725b-43d2-b716-52ce89db6cb1",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access the full JSON from the earlier \"Code in JavaScript\" node\nconst prev = $('Code in JavaScript').first().json;\n\n// Return the full JSON unchanged\nreturn [\n  {\n    json: prev\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -64
+      ],
+      "id": "a83e38c6-62da-4030-adb4-625f5f650459",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        3456,
+        -64
+      ],
+      "id": "fbc6c92b-7115-4d49-bd8c-fdac4cfb3453",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is the whole transcript of the recordig{{ $('Extract from File').item.json.data }}",
+        "options": {
+          "systemMessage": "=You are given a raw podcast transcript.\n\nPlease:\n1. Ignore timestamps, numbering, filler words, and false starts. Return only the clean, natural text.\n2. Summarize the podcast transcript below in 3–5 key themes. Then write a 2–3 sentence introduction that could serve as the start of a newsletter.\n\n3. Do not include any markdown formatting, decorative symbols, or separators (such as **, ---, ###). Only return plain text."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        3920,
+        -64
+      ],
+      "id": "ea32a2e6-d787-4704-b94b-870074bef92f",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "You are given a podcast transcript.\n\nFrom this transcript, extract:\n- 3 key insights or lessons\n- 2 emotional highlights\n- 2 powerful quotes (under 20 words)\n\nReturn the result in bullet point format only, with no extra text or formatting."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        4288,
+        -64
+      ],
+      "id": "63eca089-9fba-4837-8e65-1da2d493e597",
+      "name": "AI Agent1",
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "Using the summary, insights, and quotes, write a 400-word newsletter in Kathryn Finney’s voice: bold, empowering, insightful.\n\nFormat with:\n- Bolded headers\n- Bullet points\n- A strong CTA at the end\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        4656,
+        -64
+      ],
+      "id": "dfb478c8-1efe-42a2-8446-86e5a79c62d7",
+      "name": "AI Agent2",
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "timeout": 60000,
+          "maxRetries": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3904,
+        128
+      ],
+      "id": "6333c32e-f43a-4085-897c-39f0d9f8203f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "qtCMC7TtILl41RIg",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "timeout": 60000,
+          "maxRetries": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        4288,
+        128
+      ],
+      "id": "c427c025-c2b4-48b0-b058-f05798cddde4",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "qtCMC7TtILl41RIg",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "timeout": 90000,
+          "maxRetries": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        4688,
+        128
+      ],
+      "id": "67238cf7-0baa-44ee-a33a-38bda59d12c8",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "qtCMC7TtILl41RIg",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ab261f6a-f1bd-4f96-a05d-421ce197c0c7",
+              "leftValue": "={{ $('Code in JavaScript').item.json.recording_id }}",
+              "rightValue": "={{ $json.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2256,
+        -48
+      ],
+      "id": "b97ed89c-dd9e-44e9-a7df-24856cf76970",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const prev = $('Code in JavaScript').first().json;\n\n// Find txt transcript\nconst txtFile = prev.transcription?.files?.find(f => f.type === 'txt');\nconst transcriptTxtUrl = txtFile ? txtFile.download_url : null;\n\nreturn [\n  {\n    json: {\n      transcript_txt_url: transcriptTxtUrl\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2960,
+        -64
+      ],
+      "id": "1a17de0f-50ed-4072-b2cf-d1cc31a5950c",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1sl0fq01ON8ksNc2xHgBc8_AnZviZSmPZYKnRJTslVYo"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sl0fq01ON8ksNc2xHgBc8_AnZviZSmPZYKnRJTslVYo/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1856,
+        -48
+      ],
+      "id": "ce791176-ac92-42c3-b3d1-4e6a761196f5",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pKmqQZJCqVUIgGhr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1sl0fq01ON8ksNc2xHgBc8_AnZviZSmPZYKnRJTslVYo",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sl0fq01ON8ksNc2xHgBc8_AnZviZSmPZYKnRJTslVYo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Code in JavaScript1').item.json.recording_id }}",
+            "full transcript ": "={{ $json.data }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "full transcript ",
+              "displayName": "full transcript ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "newsletter",
+              "displayName": "newsletter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3664,
+        -64
+      ],
+      "id": "83408e0d-7987-434a-bd42-88a0a3046909",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pKmqQZJCqVUIgGhr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "You are an AI prompt generator for image creation.\n\nInput: A JSON object containing a field called \"output\" with descriptive or motivational text.\n\nYour task:\n1. Read and understand the text inside \"output\".\n2. Identify the main themes, emotions, and symbolic elements.\n3. Summarize and transform the text into a vivid, concise image generation prompt.\n4. Always describe a clear, inspirational **graphic, non-human scene** with symbolic visuals, atmosphere, and color palette (avoid human figures or faces).\n5. If the text contains a strong phrase or headline, include it as optional overlay text.\n6. Return only the refined image generation prompt (not JSON, no explanations).\n\nExample:\nInput:\n{\n  \"output\": \"A story about leaving a 9-to-5 job to pursue entrepreneurship, with golden horizons, floating coins, and financial clarity.\"\n}\n\nOutput:\n\"An inspirational graphic illustration of a pathway leaving a gray office block and leading into a radiant golden horizon, with glowing coins and a shining ledger symbolizing financial clarity. Warm gold and teal tones create a motivational atmosphere. Optional overlay text: 'Own Your Financial Freedom.'\"\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        4944,
+        -64
+      ],
+      "id": "d230d8d9-2515-40bb-9d71-b45d6f317130",
+      "name": "AI Agent3",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "timeout": 90000,
+          "maxRetries": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        4960,
+        128
+      ],
+      "id": "b06e4751-89e3-4649-b66b-94e82cb3f3e3",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "qtCMC7TtILl41RIg",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "data1",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1oHLnyIxBW1rkJWEFzHTqbLs0c7xIVeTw",
+          "mode": "list",
+          "cachedResultName": "Asanapic",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1oHLnyIxBW1rkJWEFzHTqbLs0c7xIVeTw"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        5744,
+        -64
+      ],
+      "id": "f3ad2879-7de7-4a4e-b9a2-3f9931797b36",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "0Cmh5bvkdIy7oF1y",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        5904,
+        -64
+      ],
+      "id": "6e9e2a62-8366-4a53-b3ae-efedef5d4960",
+      "name": "Share file",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "0Cmh5bvkdIy7oF1y",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9a990d45-0243-4b51-ac97-85b00e3f7594",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6496,
+        -64
+      ],
+      "id": "f0db3b18-4916-4045-bf69-f36273225159",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('AI Agent2').item.json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a formatter.\n\nTake the following input text and produce a formatted output with:\n\n1. Title  \n   - Extract the headline or create a concise descriptive title.  \n   - Capitalize properly.  \n   - Wrap the title in <h1><strong> ... </strong></h1> so it appears bold and styled as a headline in email.  \n\n2. Body  \n   - Wrap the full input text in valid HTML <p> tags.  \n   - If there are multiple paragraphs, wrap each one separately.  \n   - Preserve any inline formatting (e.g., <strong>, <br>).  \n\n3. Slug  \n   - Generate a clean, URL-safe slug from the title.  \n   - Lowercase everything.  \n   - Replace spaces with hyphens.  \n   - Remove punctuation or special characters.  \n\nRules:  \n- Do not output JSON.  \n- Do not add explanations.  \n- Output exactly three sections in this order: Title, Body, Slug.  \n\nText to convert:  \n<<<\n{{ $('AI Agent2').item.json.output }}\n>>>\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        7008,
+        -352
+      ],
+      "id": "779b02b0-77ee-4936-ace9-18113c85702d",
+      "name": "AI Agent4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        6960,
+        -224
+      ],
+      "id": "4ca84ffb-16e8-46da-82c4-ede3aa49a20f",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "qtCMC7TtILl41RIg",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "Team@buildthedamnthing.com",
+        "subject": "Editing purpose",
+        "message": "=<div style=\"font-family:Arial,Helvetica,sans-serif; line-height:1.45;\">\n<img\n    src=\"https://drive.google.com/uc?export=view&id={{$node['Upload file'].json['id']}}\"\n    alt=\"pic\"\n    style=\"max-width:100%; height:auto; display:block;\"\n  >\n\n\n  <div style=\"margin:0 0 12px 0;\">\n   {{ $('AI Agent2').item.json.output }} \n\n  </div>\n\n   <!-- Podcast links section -->\n  <div style=\"margin:20px 0; padding:12px; background-color:#f9f9f9; border-radius:6px;\">\n    <p style=\"margin:0 0 8px 0; font-weight:bold;\">🎧 Don’t just read it — listen to the full episode!</p>\n    <p style=\"margin:4px 0;\">\n      Watch on YouTube 👉 \n      <a href=\"https://www.youtube.com/channel/UCeWaiiBsITXhqk8Vo7ZeRQw?sub_confirmation=1\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Subscribe on YouTube\n      </a>\n    </p>\n    <p style=\"margin:4px 0;\">\n      Listen on Apple Podcasts 👉 \n      <a href=\"https://podcasts.apple.com/us/podcast/build-the-damn-thing-with-kathryn-finney/id1570668836\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Apple Podcasts\n      </a>\n    </p>\n  </div>\n   \n  <!-- optional: a button/link to the Drive preview page -->\n  <p style=\"margin-top:12px;\">\n    <a href=\"{{$node['Upload file'].json['webViewLink']}}\">Open in Google Drive</a>\n  </p>\n</div>\n",
+        "responseType": "customForm",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Editing ",
+              "placeholder": "={{ $('AI Agent2').item.json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        6752,
+        -64
+      ],
+      "id": "6109aded-a926-46a6-ab59-bd9dfd3c0610",
+      "name": "Send a message",
+      "webhookId": "31afbfef-6718-4f27-a882-2cc13c03ddd2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tb7SVzENyFba6Kwi",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data['Editing '] }}",
+        "options": {
+          "systemMessage": "=You are a classifier.\n\nGoal:\nLook at the human feedback (draft_message) and decide if it is about editing TEXT or editing/creating an IMAGE.\n\nRules:\n- If the feedback is about changing, correcting, or rewriting words → return \"text\".\n- If the feedback is about an image (generate, replace, edit, new image from URL, etc.) → return \"image\".\n- If it's unclear or involves an image of a real person → still return \"image\" (workflow will handle safety).\n\nOutput:\nReturn ONLY one word: \"text\" or \"image\".\nNothing else.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        6960,
+        -64
+      ],
+      "id": "a1f92127-0dcb-46f7-999d-39209c0ce029",
+      "name": "AI Agent5"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        6960,
+        144
+      ],
+      "id": "131dc94a-7d7d-4854-8f19-1c87b74c713b",
+      "name": "OpenAI Chat Model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "qtCMC7TtILl41RIg",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e970e360-fd86-46b0-b2af-97433c6f88da"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e6d24b21-dcff-4189-8056-7b23ac212f16",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        7344,
+        -64
+      ],
+      "id": "d2b252b2-ef63-4b02-beac-cdf3aabcde11",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        8144,
+        400
+      ],
+      "id": "9f2c9188-11b4-4d67-9471-c8b51d1be9ac",
+      "name": "OpenAI Chat Model6",
+      "credentials": {
+        "openAiApi": {
+          "id": "qtCMC7TtILl41RIg",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "data1",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1oHLnyIxBW1rkJWEFzHTqbLs0c7xIVeTw",
+          "mode": "list",
+          "cachedResultName": "Asanapic",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1oHLnyIxBW1rkJWEFzHTqbLs0c7xIVeTw"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        8272,
+        -352
+      ],
+      "id": "1be51022-5ed1-4140-9763-0854c6ce85a9",
+      "name": "Upload file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "0Cmh5bvkdIy7oF1y",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone",
+            "allowFileDiscovery": true
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        8432,
+        -352
+      ],
+      "id": "d1dd56a1-9886-40b5-bf7a-e5fac66cb7d5",
+      "name": "Share file1",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "0Cmh5bvkdIy7oF1y",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c3077912-5f4c-469f-a4e5-5703b6c2a608",
+              "name": "json.output ",
+              "value": "=The user has suggested changes.\nHere is the previous attempt at  Edit&improve text.\n{{ $('AI Agent3').item.json.output }}\nHere is the user feedback:\n{{ $json.data.update }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        8848,
+        -144
+      ],
+      "id": "dce746d9-bad5-4dd3-9f9c-1188152a7d1c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.data['Review the text if corect to say approve if not to write a changes '] }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "continue",
+              "description": "the text indicated that the user approve and the process may continue."
+            },
+            {
+              "category": "revise",
+              "description": "the text is requested changes or revision."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        8416,
+        112
+      ],
+      "id": "6f90e2c4-8562-47f3-8de1-c5758530a3db",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8eaa0028-aa07-4c4b-b3fd-fa24ded6669c",
+              "name": "json.output",
+              "value": "=The user has suggested changes.\nHere is the previous attempt at  Edit&improve text.\n{{ $('Edit&improve text').item.json.output }}\n\nHere is the user feedback:\n{{ $json.data.appproved }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        8560,
+        384
+      ],
+      "id": "69ee1269-8fd9-4e1f-9048-7d61636a8ffe",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('AI Agent2').item.json.output }}",
+        "options": {
+          "systemMessage": "=You are a STRICT TEXT EDITOR.\n\nORIGINAL TEXT:\n{{ $('AI Agent2').item.json.output }}\n\nEDITING INSTRUCTIONS:\n{{ $('Send a message').item.json.data['Editing '] }}\n\nTASK:\n- Apply ONLY the modifications explicitly requested in the EDITING INSTRUCTIONS to the ORIGINAL TEXT.\n- Do NOT add new content, ideas, headings, links, emojis, or images unless explicitly requested.\n- Do NOT summarize, expand, shorten, or rephrase beyond what’s requested.\n- Preserve the meaning, tone, order, and structure unless the edit explicitly changes them.\n- Keep all formatting (paragraphs, line breaks, lists, spacing); adjust only where required by the edits.\n- If the EDITING INSTRUCTIONS are empty, return the ORIGINAL TEXT unchanged.\n\nOUTPUT:\nReturn ONLY the final revised text — no explanations, no JSON, no quotes.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        7792,
+        112
+      ],
+      "id": "1bc6ca88-8359-4b2f-8dee-f0b6ea829e6c",
+      "name": "Edit&improve text"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('AI Agent3').item.json.output }}\n",
+        "options": {
+          "systemMessage": "=You are given the following JSON object:\n{{ $('AI Agent3').item.json.output }}\n\nYou are also given an instruction under the key **Editing**:\n{{ $('Send a message').item.json.data['Editing '] }}\n\nTask:\n- Update the JSON object according to the instructions in **Editing**.\n- Preserve the overall structure of the JSON.\n- Only modify the parts explicitly required by the instruction.\n- If the instruction specifies changing or replacing the image, update the JSON so that the `image` (or picture-related field) reflects the requested change.\n- If no edits are requested, return the original JSON unchanged.\n\nReturn only the updated JSON object as your output (valid JSON, no extra commentary).\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        7664,
+        -352
+      ],
+      "id": "14ad40c9-b7d4-4c5d-974d-d2d3d4dca362",
+      "name": "AI Agent6"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        8032,
+        -80
+      ],
+      "id": "73324b9c-578b-45bf-a514-9c2c1bee5fcb",
+      "name": "OpenAI Chat Model8",
+      "credentials": {
+        "openAiApi": {
+          "id": "qtCMC7TtILl41RIg",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.data.update }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "continue",
+              "description": "The text indicated that the user approve and the process may continue."
+            },
+            {
+              "category": "revise",
+              "description": "The text is requested changes or revision."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        8784,
+        -352
+      ],
+      "id": "ee9b33eb-3cb2-4293-8b50-c37a2226a68f",
+      "name": "Text Classifier1"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-image-preview (Nano Banana)"
+        },
+        "prompt": "={{ $json.output }}",
+        "options": {
+          "sampleCount": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        7968,
+        -352
+      ],
+      "id": "463c5323-c40e-4f26-8049-5dbb8663f944",
+      "name": "Edit&updateimage",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "JJLUp9YzVRYVMFfp",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-image-preview (Nano Banana)"
+        },
+        "prompt": "={{ $json.output }}",
+        "options": {
+          "sampleCount": 1,
+          "binaryPropertyOutput": "data"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        5312,
+        -64
+      ],
+      "id": "afa9bebb-0835-43ea-8aa2-3e5a133cd2c5",
+      "name": "Generate an intial image",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "JJLUp9YzVRYVMFfp",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "Team@buildthedamnthing.com",
+        "subject": "final response",
+        "message": "=\n\n<div style=\"font-family: Arial, sans-serif; line-height:1.6; color:#333;\">\n\n<!-- Image -->\n  <div style=\"margin-top:20px; text-align:center;\">\n    <img\n      src=\"https://drive.google.com/uc?export=view&id={{ $node['Upload file'].json.id }}\"\n      alt=\"pic\"\n      style=\"max-width:100%; height:auto; display:block; margin:0 auto;\"\n    >\n\n\n  </div>\n  <!-- Main content -->\n  <div style=\"margin-bottom:16px;\">\n    {{ $json.output }}\n  </div>\n\n\n  <!-- Podcast links section -->\n  <div style=\"margin:20px 0; padding:12px; background-color:#f9f9f9; border-radius:6px;\">\n    <p style=\"margin:0 0 8px 0; font-weight:bold;\">🎧 Don’t just read it — listen to the full episode!</p>\n    <p style=\"margin:4px 0;\">\n      Watch on YouTube 👉 \n      <a href=\"https://www.youtube.com/channel/UCeWaiiBsITXhqk8Vo7ZeRQw?sub_confirmation=1\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Subscribe on YouTube\n      </a>\n    </p>\n    <p style=\"margin:4px 0;\">\n      Listen on Apple Podcasts 👉 \n      <a href=\"https://podcasts.apple.com/us/podcast/build-the-damn-thing-with-kathryn-finney/id1570668836\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Apple Podcasts\n      </a>\n    </p>\n  </div>\n  \n\n  <!-- Button -->\n  <p style=\"margin-top:20px; text-align:center;\">\n    <a\n      href=\"{{ $node['Upload file'].json.webViewLink }}\"\n      style=\"background-color:#1a73e8; color:#ffffff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; display:inline-block;\"\n    >\n      Open in Google Drive\n    </a>\n  </p>\n\n \n</div>\n\n",
+        "options": {
+          "ccList": "podcast@buildthedamnthing.com "
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        7328,
+        -352
+      ],
+      "id": "fac4163a-de48-4f63-b903-12c5842da033",
+      "name": "Final response",
+      "webhookId": "7a2ed4b5-63c8-453b-b3c2-4cb974116860",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tb7SVzENyFba6Kwi",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "Team@buildthedamnthing.com",
+        "subject": "Review the mail for updating image ",
+        "message": "=<div style=\"font-family:Arial,Helvetica,sans-serif; line-height:1.45;\">\n\n\n   <img\n    src=\"https://drive.google.com/uc?export=view&id={{$node['Upload file1'].json['id']}}\"\n    alt=\"pic\"\n    style=\"max-width:100%; height:auto; display:block;\"\n  >\n\n  <div style=\"margin:0 0 12px 0;\">\n   {{ $('AI Agent2').item.json.output }} \n  </div>\n\n   <!-- Podcast links section -->\n  <div style=\"margin:20px 0; padding:12px; background-color:#f9f9f9; border-radius:6px;\">\n    <p style=\"margin:0 0 8px 0; font-weight:bold;\">🎧 Don’t just read it — listen to the full episode!</p>\n    <p style=\"margin:4px 0;\">\n      Watch on YouTube 👉 \n      <a href=\"https://www.youtube.com/channel/UCeWaiiBsITXhqk8Vo7ZeRQw?sub_confirmation=1\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Subscribe on YouTube\n      </a>\n    </p>\n    <p style=\"margin:4px 0;\">\n      Listen on Apple Podcasts 👉 \n      <a href=\"https://podcasts.apple.com/us/podcast/build-the-damn-thing-with-kathryn-finney/id1570668836\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Apple Podcasts\n      </a>\n    </p>\n  </div>\n  \n  <!-- optional: a button/link to the Drive preview page -->\n  <p style=\"margin-top:12px;\">\n    <a href=\"{{$node['Upload file1'].json['webViewLink']}}\">Open in Google Drive</a>\n  </p>\n</div>\n",
+        "responseType": "customForm",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "=update",
+              "placeholder": "="
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        8608,
+        -352
+      ],
+      "id": "4782c0b5-eb86-47a8-8371-23e39f7976f2",
+      "name": "Mail for Update Image",
+      "webhookId": "993f9648-5e41-4095-b412-5f0ed1de0684",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tb7SVzENyFba6Kwi",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "Team@buildthedamnthing.com",
+        "subject": "Review the mail for uodating the text",
+        "message": "=<div style=\"font-family:Arial,Helvetica,sans-serif; line-height:1.45;\">\n\n  <img\n    src=\"https://drive.google.com/uc?export=view&id={{$node['Upload file'].json['id']}}\"\n    alt=\"pic\"\n    style=\"max-width:100%; height:auto; display:block;\"\n  >\n\n  <div style=\"margin:0 0 12px 0;\">\n{{ $json.output }}\n   \n  </div>\n\n  <!-- Podcast links section -->\n  <div style=\"margin:20px 0; padding:12px; background-color:#f9f9f9; border-radius:6px;\">\n    <p style=\"margin:0 0 8px 0; font-weight:bold;\">🎧 Don’t just read it — listen to the full episode!</p>\n    <p style=\"margin:4px 0;\">\n      Watch on YouTube 👉 \n      <a href=\"https://www.youtube.com/channel/UCeWaiiBsITXhqk8Vo7ZeRQw?sub_confirmation=1\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Subscribe on YouTube\n      </a>\n    </p>\n    <p style=\"margin:4px 0;\">\n      Listen on Apple Podcasts 👉 \n      <a href=\"https://podcasts.apple.com/us/podcast/build-the-damn-thing-with-kathryn-finney/id1570668836\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Apple Podcasts\n      </a>\n    </p>\n  </div>\n  \n\n  <!-- optional: a button/link to the Drive preview page -->\n  <p style=\"margin-top:12px;\">\n    <a href=\"{{$node['Upload file'].json['webViewLink']}}\">Open in Google Drive</a>\n  </p>\n</div>\n",
+        "responseType": "customForm",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Review the text if corect to say approve if not to write a changes ",
+              "placeholder": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        8144,
+        112
+      ],
+      "id": "30755f17-def1-4a40-b36c-8d426c61cfd3",
+      "name": "Mail For Update Text",
+      "webhookId": "993f9648-5e41-4095-b412-5f0ed1de0684",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tb7SVzENyFba6Kwi",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "Team@buildthedamnthing.com",
+        "subject": "Approve & Disapprove Post",
+        "message": "=<div style=\"font-family:Arial,Helvetica,sans-serif; line-height:1.45;\">\n\n  <!-- Image on top -->\n  <img\n    src=\"https://drive.google.com/uc?export=view&id={{ $node['Upload file'].json['id'] }}\"\n    alt=\"pic\"\n    style=\"max-width:100%; height:auto; display:block; margin-bottom:12px;\"\n  >\n\n  <!-- Newsletter text -->\n  <div style=\"margin:0 0 12px 0;\">\n    {{ $('AI Agent2').item.json.output }} \n  </div>\n\n  <!-- Podcast links section -->\n  <div style=\"margin:20px 0; padding:12px; background-color:#f9f9f9; border-radius:6px;\">\n    <p style=\"margin:0 0 8px 0; font-weight:bold;\">🎧 Don’t just read it — listen to the full episode!</p>\n    <p style=\"margin:4px 0;\">\n      Watch on YouTube 👉 \n      <a href=\"https://www.youtube.com/channel/UCeWaiiBsITXhqk8Vo7ZeRQw?sub_confirmation=1\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Subscribe on YouTube\n      </a>\n    </p>\n    <p style=\"margin:4px 0;\">\n      Listen on Apple Podcasts 👉 \n      <a href=\"https://podcasts.apple.com/us/podcast/build-the-damn-thing-with-kathryn-finney/id1570668836\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Apple Podcasts\n      </a>\n    </p>\n  </div>\n\n  <!-- Optional: a button/link to the Drive preview page -->\n  <p style=\"margin-top:12px;\">\n    <a href=\"{{ $node['Upload file'].json['webViewLink'] }}\"\n       style=\"background-color:#1a73e8; color:#ffffff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; display:inline-block;\">\n      Open in Google Drive\n    </a>\n  </p>\n</div>\n",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "disapproveLabel": "Disapprove"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        6272,
+        -80
+      ],
+      "id": "2861ca78-0267-4883-98ff-153cde80b348",
+      "name": "Approve &Disapprove Post",
+      "webhookId": "993f9648-5e41-4095-b412-5f0ed1de0684",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tb7SVzENyFba6Kwi",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('AI Agent2').item.json.output }}",
+        "options": {
+          "systemMessage": "=You are a formatter.\n\nTake the following input text and produce a formatted output with:\n\n1. Title  \n   - Extract the headline or create a concise descriptive title.  \n   - Capitalize properly.  \n   - Wrap the title in <h1><strong> ... </strong></h1> so it appears bold and styled as a headline in email.  \n\n2. Body  \n   - Wrap the full input text in valid HTML <p> tags.  \n   - If there are multiple paragraphs, wrap each one separately.  \n   - Preserve any inline formatting (e.g., <strong>, <br>).  \n\n3. Slug  \n   - Generate a clean, URL-safe slug from the title.  \n   - Lowercase everything.  \n   - Replace spaces with hyphens.  \n   - Remove punctuation or special characters.  \n\nRules:  \n- Do not output JSON.  \n- Do not add explanations.  \n- Output exactly three sections in this order: Title, Body, Slug.  \n\nText to convert:  \n<<<\n{{ $('AI Agent2').item.json.output }}\n>>>\n\n\n\n\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        9152,
+        -368
+      ],
+      "id": "d737798c-98ee-4ada-8d8d-5c18e6d075aa",
+      "name": "AI Agent7"
+    },
+    {
+      "parameters": {
+        "sendTo": "Team@buildthedamnthing.com",
+        "subject": "FInal Mail after Editng image",
+        "message": "=\n<div style=\"font-family: Arial, sans-serif; line-height:1.6; color:#333;\">\n\n <!-- Image -->\n  <div style=\"margin-top:20px; text-align:center;\">\n    <img\n      src=\"https://drive.google.com/uc?export=view&id={{$node['Upload file1'].json['id']}}\"\n      alt=\"pic\"\n      style=\"max-width:100%; height:auto; display:block; margin:0 auto;\"\n    >\n\n\n  </div>\n  <!-- Main content -->\n  <div style=\"margin-bottom:16px;\">\n    {{ $json.output }}\n  </div>\n\n\n  <!-- Podcast links section -->\n  <div style=\"margin:20px 0; padding:12px; background-color:#f9f9f9; border-radius:6px;\">\n    <p style=\"margin:0 0 8px 0; font-weight:bold;\">🎧 Don’t just read it — listen to the full episode!</p>\n    <p style=\"margin:4px 0;\">\n      Watch on YouTube 👉 \n      <a href=\"https://www.youtube.com/channel/UCeWaiiBsITXhqk8Vo7ZeRQw?sub_confirmation=1\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Subscribe on YouTube\n      </a>\n    </p>\n    <p style=\"margin:4px 0;\">\n      Listen on Apple Podcasts 👉 \n      <a href=\"https://podcasts.apple.com/us/podcast/build-the-damn-thing-with-kathryn-finney/id1570668836\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Apple Podcasts\n      </a>\n    </p>\n  </div>\n  \n\n  <!-- Button -->\n  <p style=\"margin-top:20px; text-align:center;\">\n    <a\n      href=\"{{ $node['Upload file'].json.webViewLink }}\"\n      style=\"background-color:#1a73e8; color:#ffffff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; display:inline-block;\"\n    >\n      Open in Google Drive\n    </a>\n  </p>\n\n \n</div>\n\n\n",
+        "options": {
+          "ccList": "podcast@buildthedamnthing.com "
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        9488,
+        -368
+      ],
+      "id": "afadb5c3-04c8-4f78-ac65-4de85d9b75f0",
+      "name": "FInal Mail after Editng image",
+      "webhookId": "7a2ed4b5-63c8-453b-b3c2-4cb974116860",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tb7SVzENyFba6Kwi",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit&improve text').item.json.output }}",
+        "options": {
+          "systemMessage": "=You are a formatter.\n\nTake the following input text and produce a formatted output with:\n\n1. Title  \n   - Extract the headline or create a concise descriptive title.  \n   - Capitalize properly.  \n   - Wrap the title in <h1><strong> ... </strong></h1> so it appears bold and styled as a headline in email.  \n\n2. Body  \n   - Wrap the full input text in valid HTML <p> tags.  \n   - If there are multiple paragraphs, wrap each one separately.  \n   - Preserve any inline formatting (e.g., <strong>, <br>).  \n\n3. Slug  \n   - Generate a clean, URL-safe slug from the title.  \n   - Lowercase everything.  \n   - Replace spaces with hyphens.  \n   - Remove punctuation or special characters.  \n\nRules:  \n- Do not output JSON.  \n- Do not add explanations.  \n- Output exactly three sections in this order: Title, Body, Slug.  \n\nText to convert:  \n<<<\n{{ $('Edit&improve text').item.json.output }}\n>>>\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        8800,
+        112
+      ],
+      "id": "5519ebd5-c481-4622-8d50-c023bcb82a76",
+      "name": "AI Agent8",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "sendTo": "Team@buildthedamnthing.com",
+        "subject": "FInal Mail after Editng Text",
+        "message": "=\n\n<div style=\"font-family: Arial, sans-serif; line-height:1.6; color:#333;\">\n\n <!-- Image -->\n  <div style=\"margin-top:20px; text-align:center;\">\n    <img\n      src=\"https://drive.google.com/uc?export=view&id={{ $node['Upload file'].json.id }}\"\n      alt=\"pic\"\n      style=\"max-width:100%; height:auto; display:block; margin:0 auto;\"\n    >\n\n\n  </div>\n  <!-- Main content -->\n  <div style=\"margin-bottom:16px;\">\n    {{ $json.output }}\n  </div>\n\n\n  <!-- Podcast links section -->\n  <div style=\"margin:20px 0; padding:12px; background-color:#f9f9f9; border-radius:6px;\">\n    <p style=\"margin:0 0 8px 0; font-weight:bold;\">🎧 Don’t just read it — listen to the full episode!</p>\n    <p style=\"margin:4px 0;\">\n      Watch on YouTube 👉 \n      <a href=\"https://www.youtube.com/channel/UCeWaiiBsITXhqk8Vo7ZeRQw?sub_confirmation=1\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Subscribe on YouTube\n      </a>\n    </p>\n    <p style=\"margin:4px 0;\">\n      Listen on Apple Podcasts 👉 \n      <a href=\"https://podcasts.apple.com/us/podcast/build-the-damn-thing-with-kathryn-finney/id1570668836\"\n         style=\"color:#1a73e8; font-weight:bold; text-decoration:none;\">\n         Apple Podcasts\n      </a>\n    </p>\n  </div>\n  \n\n  <!-- Button -->\n  <p style=\"margin-top:20px; text-align:center;\">\n    <a\n      href=\"{{ $node['Upload file'].json.webViewLink }}\"\n      style=\"background-color:#1a73e8; color:#ffffff; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; display:inline-block;\"\n    >\n      Open in Google Drive\n    </a>\n  </p>\n\n \n</div>\n\n\n\n",
+        "options": {
+          "ccList": "podcast@buildthedamnthing.com "
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        9152,
+        112
+      ],
+      "id": "c6efbe94-fa82-4620-8e32-406a465fcdae",
+      "name": "FInal Mail after Editng image1",
+      "webhookId": "7a2ed4b5-63c8-453b-b3c2-4cb974116860",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tb7SVzENyFba6Kwi",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "Team@buildthedamnthing.com",
+        "subject": "New Recording not exist",
+        "emailType": "text",
+        "message": "Already processed — waiting for next recording",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2544,
+        -304
+      ],
+      "id": "9b3c8d82-69c7-434b-b6be-5b393ec5c821",
+      "name": "Send a message1",
+      "webhookId": "4ffdc960-a44a-4ebd-9fab-b2af9a69954b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tb7SVzENyFba6Kwi",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "resize",
+        "width": 800,
+        "height": 400,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        5520,
+        -64
+      ],
+      "id": "112afa98-edd0-417e-b6cb-1d36a2a6d37e",
+      "name": "Edit Image"
+    },
+    {
+      "parameters": {
+        "operation": "resize",
+        "width": 800,
+        "height": 400,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        8128,
+        -352
+      ],
+      "id": "7183d5be-e59a-4848-aaa4-a177cc1d4a58",
+      "name": "Edit Image1"
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        -48
+      ],
+      "id": "f18cd4f4-9bee-473d-bb5f-37bb1858dab2",
+      "name": "Limit"
+    }
+  ],
+  "pinData": {
+    "AI Agent": [
+      {
+        "json": {
+          "output": "This podcast introduces \"Everyone's Talking Money\" with host Sherry Rash, a show focused on helping women in their thirties and forties who have achieved financial success but still find money stressful. The podcast covers important topics such as reducing taxes, protecting wealth, planning for the future, and enjoying the money they've worked hard to earn.\n\nKey themes:\n1. Financial success and challenges faced by women in their thirties and forties.\n2. Strategies for reducing taxes and protecting wealth.\n3. Importance of financial planning and legacy building.\n4. Encouraging women to enjoy and feel confident about their financial achievements.\n\nIntroduction for a newsletter:\nNavigating money can be stressful, even for successful women in their thirties and forties. The podcast \"Everyone's Talking Money\" with Sherry Rash dives into the financial conversations women actually want, from tax strategies to legacy planning, empowering listeners to protect their wealth and truly enjoy the money they've earned. Tune in for practical advice and inspiring discussions tailored to help women take control of their financial futures."
+        }
+      }
+    ],
+    "AI Agent1": [
+      {
+        "json": {
+          "output": "- Key insights or lessons:\n  - Financial success does not eliminate the stress associated with managing money for many women in their thirties and forties.\n  - Implementing strategies like tax reduction and wealth protection is crucial for maintaining and growing financial security.\n  - Planning for the future and building a legacy empowers women to confidently enjoy their financial achievements.\n\n- Emotional highlights:\n  - The podcast acknowledges the unique financial pressures women face despite their success, creating a sense of understanding and support.\n  - Encouraging women to feel confident and enjoy the money they've worked hard to earn fosters empowerment and positivity.\n\n- Powerful quotes:\n  - \"Even successful women find money stressful.\"\n  - \"Protect your wealth and truly enjoy the money you've earned.\""
+        }
+      }
+    ],
+    "AI Agent2": [
+      {
+        "json": {
+          "output": "**Why Financial Success Doesn’t Mean Stress-Free Money Management**\n\nListen up, powerhouse women in your 30s and 40s: financial success is just the beginning, not the finish line. Too many of us hit milestones only to realize stress around money hasn’t disappeared — it’s just shifted shape. As one insightful podcast recently put it, *“Even successful women find money stressful.”* That truth is your wake-up call.\n\n**The Reality Check: Success ≠ Stress-Free Finances**\n\n- Success brings complexity — higher taxes, wealth protection needs, and the pressure of maintaining what you’ve built.\n- Without a solid strategy, your hard-earned money can feel more like a weight than a win.\n- Many women overlook critical financial planning elements that safeguard their prosperity and future.\n\n**The Power Move: Strategic Financial Management**\n\nHere’s how to flip the script:\n\n- **Reduce your tax burden:** It’s not just about what you make—it’s about what you keep.\n- **Protect your wealth:** Shield your assets from unexpected risks that could undermine your progress.\n- **Plan your legacy:** Build a future that reflects your values and empowers generations to come.\n\n**Own Your Financial Journey with Confidence**\n\nMoney stress doesn’t have to be your story. When you protect your wealth and plan ahead, you get to embrace your financial wins fully. Remember: *“Protect your wealth and truly enjoy the money you’ve earned.”* That’s not just advice — it’s permission to savor your success without fear.\n\n**Why This Matters Now**\n\nYou’ve broken barriers and achieved incredible things. Now, it’s time to fine-tune your financial strategy so your money works as hard as you do. Confidence over confusion, control over chaos — that’s the financial freedom we deserve.\n\n**Your Next Step? Own It.**\n\nIf you’re ready to move beyond stress and start building lasting security, take action today:\n\n- Review your tax strategies with a pro.\n- Build or update your wealth protection plans.\n- Start conversations about your financial legacy.\n\n**Don’t just earn it — enjoy it.**\n\nThe path to financial peace is strategic, intentional, and unapologetically yours. Go claim it.\n\n---\nReady to protect and grow your wealth with confidence? Join our upcoming workshop tailored for driven women like you. Let’s make your money work for your future. Sign up now and start owning your financial power!"
+        }
+      }
+    ],
+    "AI Agent3": [
+      {
+        "json": {
+          "output": "A symbolic, empowering graphic scene depicting a strong, winding golden pathway weaving through a sophisticated, abstract landscape of interlocking gears, shield icons, and growing trees representing wealth protection and legacy. Cool blue and rich gold hues create a balanced, confident atmosphere. Subtle glowing graphs and tax symbols float in the background, symbolizing strategic financial management complexity made clear and manageable. Optional overlay text: \"Protect Your Wealth and Enjoy Your Success.\""
+        }
+      }
+    ],
+    "HTTP Request": [
+      {
+        "json": {
+          "page": 0,
+          "total_items": 48,
+          "total_pages": 3,
+          "next_page_url": "https://platform.riverside.fm/api/v2/recordings?page=1",
+          "data": [
+            {
+              "recording_id": "174d3db2-a9bb-45b8-ba91-f07adf38dc02",
+              "studio_id": "66fa967656ef395f1a77f7cd",
+              "studio_name": "Stefanie Wenninger's Studio",
+              "project_id": "67115ee92db3d07dcd43ace2",
+              "project_name": "Stefanie",
+              "name": "Stefanie",
+              "status": "stopped",
+              "created_date": "2024-10-17T19:00:57.409Z",
+              "tracks": [
+                {
+                  "id": "composed-9nDiXLtn5",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/6711601db40dd2647e045ff0"
+                    }
+                  ]
+                },
+                {
+                  "id": "stefaniewenninger-giomrehoi",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Stefanie Wenninger",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/67115ff80af998488f9d1a67"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/67115ff80af9982c0d9d1a68"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/67115ff80af99867f59d1a69"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/67115ff80af998e1639d1a6a"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/67116059608b1063ed5d037e"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/174d3db2-a9bb-45b8-ba91-f07adf38dc02?type=txt&fileName=Stefanie"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/174d3db2-a9bb-45b8-ba91-f07adf38dc02?type=srt&fileName=Stefanie"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "8798bf50-d0f5-4d08-864f-c861f901d97f",
+              "studio_id": "66fa967656ef395f1a77f7cd",
+              "studio_name": "Stefanie Wenninger's Studio",
+              "project_id": "66fa967656ef392e4877f8b0",
+              "project_name": "Welcome To Riverside!",
+              "name": "Welcome To Riverside!",
+              "status": "stopped",
+              "created_date": "2024-09-30T12:15:50.825Z",
+              "tracks": [
+                {
+                  "id": "bridget-ajdl4al84",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Bridget",
+                  "files": [
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/6399d61848c3fd36500f65c3"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/6399d65248c3fd36500f65c7"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/6399d62948c3fd36500f65c4"
+                    },
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/6399d63a48c3fd36500f65c5"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/6399d64548c3fd36500f65c6"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/676aa1f8ddba0647340257e7"
+                    }
+                  ]
+                },
+                {
+                  "id": "composed-3ijz9hf6k",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/6399d66b48c3fd36500f65c9"
+                    },
+                    {
+                      "type": "otVideoBackup",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/646f9cc2b4989bda70e88fa9"
+                    }
+                  ]
+                },
+                {
+                  "id": "stephen-zyb8zae0v",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Stephen",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/6399d67c48c3fd36500f65ca"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/6399d69a48c3fd36500f65cb"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/6399d6a648c3fd36500f65cc"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/6399d6b548c3fd36500f65cd"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/6399d6c448c3fd36500f65ce"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/8798bf50-d0f5-4d08-864f-c861f901d97f?type=txt&fileName=Welcome_To Riverside!"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/8798bf50-d0f5-4d08-864f-c861f901d97f?type=srt&fileName=Welcome_To Riverside!"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "10e4e41d-6e0b-4199-b37a-95b723cdd689",
+              "studio_id": "66fa967656ef395f1a77f7cd",
+              "studio_name": "Stefanie Wenninger's Studio",
+              "project_id": "66fa967656ef392e4877f8b0",
+              "project_name": "Welcome To Riverside!",
+              "name": "Editor demo with Stephen & Bridget",
+              "status": "stopped",
+              "created_date": "2024-09-30T12:15:50.821Z",
+              "tracks": [
+                {
+                  "id": "bridget-demo-2k30sar5a",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Bridget",
+                  "files": [
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/66a8e8198a7f193db2ae4917"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/66a8e8198a7f193db2ae4918"
+                    },
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/66a8e8198a7f193db2ae4919"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/66a8e8198a7f193db2ae491a"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/66a8e8198a7f193db2ae491b"
+                    }
+                  ]
+                },
+                {
+                  "id": "composed-demo-6HZJNrGyv",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/66a8e8198a7f193db2ae4920"
+                    }
+                  ]
+                },
+                {
+                  "id": "stephenrobles-demo-ghz8of33m",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Stephen Robles",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/66a8e8158a7f193db2ae4909"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/66a8e8158a7f193db2ae490a"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/66a8e8158a7f193db2ae490b"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/66a8e8158a7f193db2ae490c"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/66a8e8158a7f193db2ae490d"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/10e4e41d-6e0b-4199-b37a-95b723cdd689?type=txt&fileName=Editor_demo with Stephen & Bridget"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/10e4e41d-6e0b-4199-b37a-95b723cdd689?type=srt&fileName=Editor_demo with Stephen & Bridget"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "d9ba36ae-792d-413d-9629-7fc26b054c9d",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "68c1de7b17a7a95136c4319a",
+              "project_name": "Untitled",
+              "name": "Kathryn — Take 02",
+              "status": "stopped",
+              "created_date": "2025-09-10T20:27:28.835Z",
+              "tracks": [
+                {
+                  "id": "composed-RL7YIvzAK",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1e18980f03cbedf1c3aa3"
+                    }
+                  ]
+                },
+                {
+                  "id": "kathrynfinney-a0fu48m6o",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1df5009a57839cac6c49d"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1df5009a5786f05c6c49e"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1df5009a578cf33c6c49f"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1df5009a5784d5dc6c4a0"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1df862a76b363857987ad"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1e1b02a76b36385429845"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/d9ba36ae-792d-413d-9629-7fc26b054c9d?type=txt&fileName=Kathryn_— Take 02"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/d9ba36ae-792d-413d-9629-7fc26b054c9d?type=srt&fileName=Kathryn_— Take 02"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "649d41bb-bb48-42fa-83f3-a91c72d839e2",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "68c1de7b17a7a95136c4319a",
+              "project_name": "Untitled",
+              "name": "Kathryn",
+              "status": "stopped",
+              "created_date": "2025-09-10T20:25:25.233Z",
+              "tracks": [
+                {
+                  "id": "composed-O6gomJqHm",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": []
+                },
+                {
+                  "id": "kathrynfinney-juoa5fbwk",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1df09850c0d4353785d0e"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1df09850c0d5b98785d0f"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1df09850c0d3517785d10"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1df09850c0d566a785d11"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1df2c2a76b36385595d45"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/649d41bb-bb48-42fa-83f3-a91c72d839e2?type=txt&fileName=Kathryn"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/649d41bb-bb48-42fa-83f3-a91c72d839e2?type=srt&fileName=Kathryn"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "8727d96b-5655-4ea2-bac6-ff6f8960f3eb",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "68b89e40dc35064b61ebf286",
+              "project_name": "Andee HartL Build the Damn Thing",
+              "name": "Andee Hart Build the Damn Thing",
+              "status": "stopped",
+              "created_date": "2025-09-10T17:05:46.206Z",
+              "tracks": [
+                {
+                  "id": "composed-JLcASErZ9",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": []
+                },
+                {
+                  "id": "andeehart-rf2zdcxaq",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Andee Hart",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1bac7f89a8adf62488c46"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1bac7f89a8ac660488c47"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1bac7f89a8a272e488c48"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1bac7f89a8a3e1f488c49"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1bb422a76b36385dc8a5c"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1bc612a76b363854a98ad"
+                    }
+                  ]
+                },
+                {
+                  "id": "kathrynfinney-wued1bqek",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1bac7f89a8a7b4b488c4a"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1bac7f89a8a390a488c4b"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1bac7f89a8a72fd488c4c"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1bac7f89a8a70ba488c4d"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1bb4b2a76b36385dfd5b8"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68c1bc662a76b363854c577e"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/8727d96b-5655-4ea2-bac6-ff6f8960f3eb?type=txt&fileName=Andee_Hart Build the Damn Thing"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/8727d96b-5655-4ea2-bac6-ff6f8960f3eb?type=srt&fileName=Andee_Hart Build the Damn Thing"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "f154793f-3153-4e0e-af3b-730e3c66fec1",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "68b89aea62bd40575dd64529",
+              "project_name": "Shari",
+              "name": "PODCAST RECORDING: Shari Rash: Build the Damn Thing",
+              "status": "stopped",
+              "created_date": "2025-09-03T20:02:24.693Z",
+              "tracks": [
+                {
+                  "id": "composed-pLsDX76Jj",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68bbc713cc36ddaa30cfd6b3"
+                    }
+                  ]
+                },
+                {
+                  "id": "kathrynfinney-pyai5heb1",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b8a9ecad520027ee8c2124"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b8a9ecad520050578c2125"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b8a9ecad520054ca8c2126"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b8a9ecad5200c6118c2127"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b8abbe2a76b36385a67b55"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b8af912a76b36385e91909"
+                    }
+                  ]
+                },
+                {
+                  "id": "sharirash-asyhpshyr",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Shari Rash",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b8a9ecad5200a1438c2128"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b8a9ecad520052498c2129"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b8a9ecad52003f408c212a"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b8a9ecad520034a88c212b"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b8abc72a76b36385a987e5"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b8ae392a76b36385797011"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/f154793f-3153-4e0e-af3b-730e3c66fec1?type=txt&fileName=PODCAST_RECORDING: Shari Rash: Build the Damn Thing"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/f154793f-3153-4e0e-af3b-730e3c66fec1?type=srt&fileName=PODCAST_RECORDING: Shari Rash: Build the Damn Thing"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "12399b16-6860-4927-a904-1001f777bd92",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "68b1af124ff8d0d83e670b6d",
+              "project_name": "Build the Damn Thing Podcast Recording: Bianca D'Alessio",
+              "name": "Build the Damn Thing Podcast Recording: Bianca D'Alessio — Take 02",
+              "status": "stopped",
+              "created_date": "2025-08-29T20:04:27.944Z",
+              "tracks": [
+                {
+                  "id": "composed-b2Iq3ottw",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b4f7ecfce00265c526eb5d"
+                    }
+                  ]
+                },
+                {
+                  "id": "kathrynfinney-83t16ng2w",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b2121c4e710b930305218d"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b2121c4e710be86c05218e"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b2121c4e710b046f05218f"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b2121c4e710b567b052190"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b212a013376fa7f2d69643"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b212e413376fa7f2eb09b0"
+                    }
+                  ]
+                },
+                {
+                  "id": "bianca-E3UGk9GNV",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Bianca",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b2121c4e710b6c2c052191"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b2121c4e710b2e2e052192"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b2121c4e710b7bba052193"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b2126d13376fa7f2c740d5"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b225c713376fa7f2400020"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/12399b16-6860-4927-a904-1001f777bd92?type=txt&fileName=Build_the Damn Thing Podcast Recording: Bianca D'Alessio — Take 02"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/12399b16-6860-4927-a904-1001f777bd92?type=srt&fileName=Build_the Damn Thing Podcast Recording: Bianca D'Alessio — Take 02"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "4acd8235-b9db-43eb-bfb9-573ac2d3f52b",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "68b1af124ff8d0d83e670b6d",
+              "project_name": "Build the Damn Thing Podcast Recording: Bianca D'Alessio",
+              "name": "Build the Damn Thing Podcast Recording: Bianca D'Alessio",
+              "status": "stopped",
+              "created_date": "2025-08-29T20:04:04.972Z",
+              "tracks": [
+                {
+                  "id": "composed-WfKqNfhOt",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b4f7ebc5bbdc5267a919b1"
+                    }
+                  ]
+                },
+                {
+                  "id": "kathrynfinney-kqegvilgl",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b207be1d4a2770bf98cdfe"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b207be1d4a278eb398cdff"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b207be1d4a27c78598ce00"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b207be1d4a273bad98ce01"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b207df13376fa7f27a3ce9"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b2127013376fa7f2c843b5"
+                    }
+                  ]
+                },
+                {
+                  "id": "bianca-rS0nKtevA",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Bianca",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b2080913376fa7f2878590"
+                    },
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b4f7ebc5bbdc2578a919b2"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b4f7ebc5bbdc64fda919b3"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b4f7ebc5bbdc3f6fa919b4"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/4acd8235-b9db-43eb-bfb9-573ac2d3f52b?type=txt&fileName=Build_the Damn Thing Podcast Recording: Bianca D'Alessio"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/4acd8235-b9db-43eb-bfb9-573ac2d3f52b?type=srt&fileName=Build_the Damn Thing Podcast Recording: Bianca D'Alessio"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "43615e28-4525-4c3f-a217-84fc772c6a62",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "68b1ae7f77c1ff6e9b3d995b",
+              "project_name": "Build the Damn Thing Podcast Recording: Marie Denee",
+              "name": "Build the Damn Thing Podcast Recording: Marie Denee",
+              "status": "stopped",
+              "created_date": "2025-08-29T16:02:06.204Z",
+              "tracks": [
+                {
+                  "id": "composed-xVqDYSqSr",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b4b2314e228b714939d2a4"
+                    }
+                  ]
+                },
+                {
+                  "id": "mariedenee-w3qtrgv9x",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Marie Denee",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b1dc25064820f5297cf89e"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b1dc250648204c547cf89f"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b1dc250648201aa77cf8a0"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b1dc250648203ac67cf8a1"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b1dcb313376fa7f2ed6246"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b1ddb513376fa7f246edc2"
+                    }
+                  ]
+                },
+                {
+                  "id": "kathrynfinney-mdgk404su",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b1dc25064820377b7cf8a2"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b1dc2506482077717cf8a3"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b1dc250648203a627cf8a4"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b1dc2506482062c87cf8a5"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b1dcc413376fa7f2f3350c"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/68b1dda713376fa7f241fb1e"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/43615e28-4525-4c3f-a217-84fc772c6a62?type=txt&fileName=Build_the Damn Thing Podcast Recording: Marie Denee"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/43615e28-4525-4c3f-a217-84fc772c6a62?type=srt&fileName=Build_the Damn Thing Podcast Recording: Marie Denee"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "e06f6a8d-ca29-44d7-a17a-e9083ec53fd1",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "688ccbf985220923f23fae08",
+              "project_name": "Darlene Gillard Jones Recording",
+              "name": "Darlene Gillard Jones Recording",
+              "status": "stopped",
+              "created_date": "2025-08-01T22:47:00.357Z",
+              "tracks": [
+                {
+                  "id": "composed-FpoVYRcng",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688eae05232c332d00d1a35b"
+                    }
+                  ]
+                },
+                {
+                  "id": "kathrynfinney-mjm1ghj1o",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d4e67dee0e6639eb805ac"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d4e67dee0e61294b805ad"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d4e67dee0e647f7b805ae"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d4e67dee0e64e02b805af"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d4ef881ed61c7fa52df3b"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d508a81ed61c7fa87383c"
+                    }
+                  ]
+                },
+                {
+                  "id": "darlenegillardjones-wppn6q0pe",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Darlene Gillard Jones",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d4e67dee0e65283b805b0"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d4e67dee0e63908b805b1"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d4e67dee0e68239b805b2"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d4e67dee0e6b144b805b3"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d4ef481ed61c7fa523b69"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d515e81ed61c7faa2cc8b"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/e06f6a8d-ca29-44d7-a17a-e9083ec53fd1?type=txt&fileName=Darlene_Gillard Jones Recording"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/e06f6a8d-ca29-44d7-a17a-e9083ec53fd1?type=srt&fileName=Darlene_Gillard Jones Recording"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "e68c5d2c-a60d-4791-82e4-deabaac9d538",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "6889a10a47ebfdaf7373302c",
+              "project_name": "Cheryl Contee Podcast Recording",
+              "name": "Episode 14: How to Use Ai to Grow Your Business Cheryl Contee",
+              "status": "stopped",
+              "created_date": "2025-08-01T20:11:43.293Z",
+              "tracks": [
+                {
+                  "id": "composed-05kotdfpJ",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2eab16a64d15a8b21c51"
+                    }
+                  ]
+                },
+                {
+                  "id": "cherylcontee-f08sjli7w",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Cheryl Contee",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2a8070ee9bcb0cf33d1d"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2a8070ee9ba4c0f33d1e"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2a8070ee9b5448f33d1f"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2a8070ee9b6516f33d20"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2aff81ed61c7fa9fe944"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2e8681ed61c7fa483890"
+                    }
+                  ]
+                },
+                {
+                  "id": "kathrynfinney-yntco3eqy",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2a8070ee9b26abf33d21"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2a8070ee9b4b54f33d22"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2a8070ee9b9fb5f33d23"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2a8070ee9b4678f33d24"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2b0381ed61c7faa0a7a8"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d2e5381ed61c7fa3f0e1d"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/e68c5d2c-a60d-4791-82e4-deabaac9d538?type=txt&fileName=Episode_14: How to Use Ai to Grow Your Business Cheryl Contee"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/e68c5d2c-a60d-4791-82e4-deabaac9d538?type=srt&fileName=Episode_14: How to Use Ai to Grow Your Business Cheryl Contee"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "55e3f047-3c42-47de-abd0-02b084248316",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "688d008469cea0bb365efc23",
+              "project_name": "Kathryn",
+              "name": "Kathryn — Take 05",
+              "status": "stopped",
+              "created_date": "2025-08-01T18:53:38.951Z",
+              "tracks": [
+                {
+                  "id": "composed-3622C4bEV",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0d73bc84f47b330a02f5"
+                    }
+                  ]
+                },
+                {
+                  "id": "kathrynfinney-9vyk631il",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0d4c70ee9b25bfea47c4"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0d4c70ee9b0e5aea47c5"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0d4c70ee9b7eddea47c6"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0d4c70ee9b3db2ea47c7"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0d7481ed61c7fa598ce7"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0eed81ed61c7fab38c40"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/55e3f047-3c42-47de-abd0-02b084248316?type=txt&fileName=Kathryn_— Take 05"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/55e3f047-3c42-47de-abd0-02b084248316?type=srt&fileName=Kathryn_— Take 05"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "081274bb-5473-4ea4-8463-390c6d11672b",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "688d008469cea0bb365efc23",
+              "project_name": "Kathryn",
+              "name": "Kathryn — Take 04",
+              "status": "stopped",
+              "created_date": "2025-08-01T18:33:46.219Z",
+              "tracks": [
+                {
+                  "id": "composed-WK5sKPV7g",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0983e6f11918b5b366c2"
+                    }
+                  ]
+                },
+                {
+                  "id": "kathrynfinney-3th71dhng",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d08e069cea0864f61bf6e"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d08e069cea06e2261bf6f"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d08e069cea0098461bf70"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d08e069cea09b9061bf71"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d090681ed61c7fa534c37"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/081274bb-5473-4ea4-8463-390c6d11672b?type=txt&fileName=Kathryn_— Take 04"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/081274bb-5473-4ea4-8463-390c6d11672b?type=srt&fileName=Kathryn_— Take 04"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "ffdc2e5b-a5f0-4ea9-8203-20d5beca9632",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "name": "Kathryn — Take 03",
+              "status": "done",
+              "created_date": "2025-08-01T18:14:48.364Z",
+              "tracks": [
+                {
+                  "id": "kathrynfinney-png34luyc-DzhY87Wgv",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0418fa6fcbb6451e5748"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0418fa6fcb565f1e5749"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0418fa6fcb47391e574a"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0418fa6fcb85681e574b"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/ffdc2e5b-a5f0-4ea9-8203-20d5beca9632?type=txt&fileName=Kathryn_— Take 03"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/ffdc2e5b-a5f0-4ea9-8203-20d5beca9632?type=srt&fileName=Kathryn_— Take 03"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "7306fbf6-cd4d-483b-96be-6642e7319f63",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "688d008469cea0bb365efc23",
+              "project_name": "Kathryn",
+              "name": "Kathryn — Take 03",
+              "status": "stopped",
+              "created_date": "2025-08-01T18:05:36.775Z",
+              "tracks": [
+                {
+                  "id": "composed-mrcOUGdg6",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0362c8c1f03ed9575cde"
+                    }
+                  ]
+                },
+                {
+                  "id": "kathrynfinney-png34luyc",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0252fa6fcbb55a1dcc00"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0252fa6fcb24c11dcc01"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0252fa6fcb63d91dcc02"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d0252fa6fcb6a9e1dcc03"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d028381ed61c7fad415b0"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d04a581ed61c7fa511e79"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/7306fbf6-cd4d-483b-96be-6642e7319f63?type=txt&fileName=Kathryn_— Take 03"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/7306fbf6-cd4d-483b-96be-6642e7319f63?type=srt&fileName=Kathryn_— Take 03"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "88c1cb48-f611-4558-92ed-7afa2f63a8c0",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "688d008469cea0bb365efc23",
+              "project_name": "Kathryn",
+              "name": "Kathryn — Take 02",
+              "status": "stopped",
+              "created_date": "2025-08-01T18:01:47.165Z",
+              "tracks": [
+                {
+                  "id": "composed-j0tFKrkDf",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": []
+                },
+                {
+                  "id": "kathrynfinney-nj5e51ari",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d015ddee0e6236aa286d9"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d015ddee0e6d5f0a286da"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d015ddee0e614f6a286db"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d015ddee0e632d1a286dc"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d019a81ed61c7fa9f127d"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/88c1cb48-f611-4558-92ed-7afa2f63a8c0?type=txt&fileName=Kathryn_— Take 02"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/88c1cb48-f611-4558-92ed-7afa2f63a8c0?type=srt&fileName=Kathryn_— Take 02"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "81f579c8-94de-47d8-9984-58ab9aa131f4",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "688d008469cea0bb365efc23",
+              "project_name": "Kathryn",
+              "name": "Kathryn",
+              "status": "stopped",
+              "created_date": "2025-08-01T17:59:32.911Z",
+              "tracks": [
+                {
+                  "id": "composed-FDuIIPRuB",
+                  "type": "all_participants",
+                  "status": "done",
+                  "files": [
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d04695d2a0c9f24cc3071"
+                    }
+                  ]
+                },
+                {
+                  "id": "kathrynfinney-5d3r70xmo",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Kathryn Finney",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d00fd5c47a71d4c90c172"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d00fd5c47a754b390c173"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d00fd5c47a73a2290c174"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d00fd5c47a76efd90c175"
+                    },
+                    {
+                      "type": "cloud_recording",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d013a81ed61c7fa895b6d"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d058c81ed61c7fa852d86"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/81f579c8-94de-47d8-9984-58ab9aa131f4?type=txt&fileName=Kathryn"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/81f579c8-94de-47d8-9984-58ab9aa131f4?type=srt&fileName=Kathryn"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "e8d13616-df1f-4f06-90f0-9a0c7711563f",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "688bc89620d196b948d47eb4",
+              "project_name": "Episode 16 - How to Own Your Power: The Mindset Every Entrepreneur Needs to Build Boldly",
+              "name": "Alex",
+              "status": "done",
+              "created_date": "2025-07-31T20:19:49.601Z",
+              "tracks": [
+                {
+                  "id": "alex-NVeqhZyMp",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Team Build",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688bcfe535ab5005cb1b114b"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688bcfe535ab50cf301b114c"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688bcfe535ab5092641b114d"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688bcfe535ab50660b1b114e"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688bd13681ed61c7fa404de4"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/e8d13616-df1f-4f06-90f0-9a0c7711563f?type=txt&fileName=Alex"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/e8d13616-df1f-4f06-90f0-9a0c7711563f?type=srt&fileName=Alex"
+                  }
+                ]
+              }
+            },
+            {
+              "recording_id": "296c128e-4dbe-4229-814f-6e76517af500",
+              "studio_id": "67f3cab5f0cdec36540b3315",
+              "studio_name": "Build the Damn Thing with Kathryn Finney",
+              "project_id": "688a658423a5f60a7955505f",
+              "project_name": "Episode 17 - Negotiating and Owning Your Power",
+              "name": "Alex 1   Freedom, money or powe",
+              "status": "done",
+              "created_date": "2025-07-30T18:41:47.902Z",
+              "tracks": [
+                {
+                  "id": "alex_1_freedom_money-N500dcxbx",
+                  "type": "participant",
+                  "status": "done",
+                  "track_name": "Team Build",
+                  "files": [
+                    {
+                      "type": "raw_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688a676c4396baabe14aed5e"
+                    },
+                    {
+                      "type": "raw_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688a676c4396ba1de24aed5f"
+                    },
+                    {
+                      "type": "aligned_video",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688a676c4396bab6c74aed60"
+                    },
+                    {
+                      "type": "compressed_audio",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688a676c4396ba1cfa4aed61"
+                    },
+                    {
+                      "type": "audioEnhanced",
+                      "download_url": "https://platform.riverside.fm/api/v1/download/file/688d1bc781ed61c7fa81db17"
+                    }
+                  ]
+                }
+              ],
+              "transcription": {
+                "status": "done",
+                "files": [
+                  {
+                    "type": "txt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/296c128e-4dbe-4229-814f-6e76517af500?type=txt&fileName=Alex_1   Freedom, money or powe"
+                  },
+                  {
+                    "type": "srt",
+                    "download_url": "https://platform.riverside.fm/api/v1/download/transcription/296c128e-4dbe-4229-814f-6e76517af500?type=srt&fileName=Alex_1   Freedom, money or powe"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Generate an intial image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Share file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share file": {
+      "main": [
+        [
+          {
+            "node": "Approve &Disapprove Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent5": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit&improve text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Edit&improve text",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent8",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file1": {
+      "main": [
+        [
+          {
+            "node": "Share file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share file1": {
+      "main": [
+        [
+          {
+            "node": "Mail for Update Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "AI Agent8",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit&improve text": {
+      "main": [
+        [
+          {
+            "node": "Mail For Update Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Edit&improve text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent6": {
+      "main": [
+        [
+          {
+            "node": "Edit&updateimage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model8": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Text Classifier1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent7",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit&updateimage": {
+      "main": [
+        [
+          {
+            "node": "Edit Image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an intial image": {
+      "main": [
+        [
+          {
+            "node": "Edit Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent4": {
+      "main": [
+        [
+          {
+            "node": "Final response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mail for Update Image": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mail For Update Text": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve &Disapprove Post": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent7": {
+      "main": [
+        [
+          {
+            "node": "FInal Mail after Editng image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent8": {
+      "main": [
+        [
+          {
+            "node": "FInal Mail after Editng image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image1": {
+      "main": [
+        [
+          {
+            "node": "Upload file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 0
+  },
+  "versionId": "f732c3d9-0ba1-4910-a82c-b141b6a47df2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "44be7e4785f83e5322d3191466f163eba2e74d741bb82a836dd2ebe7dc759449"
+  },
+  "id": "Kt7MLhN7Wunmz2Os",
+  "tags": []
+}
