@@ -1,0 +1,1293 @@
+{
+  "name": "lucas",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs",
+          "mode": "list",
+          "cachedResultName": "Instantly Lucaco Leads Part 9 (14Sep'25 onwards)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 364418568,
+          "mode": "list",
+          "cachedResultName": "14TH SEPT",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs/edit#gid=364418568"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "CAMPAIGN",
+              "lookupValue": "APOLLO HIRING"
+            },
+            {
+              "lookupColumn": "Email",
+              "lookupValue": "="
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -240,
+        -144
+      ],
+      "id": "1948ded3-057d-4fe5-a2e3-9094d1963f1c",
+      "name": "Apollo Hiring",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9q6yuzUP8IcrdWD1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs",
+          "mode": "list",
+          "cachedResultName": "Instantly Lucaco Leads Part 9 (14Sep'25 onwards)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 364418568,
+          "mode": "list",
+          "cachedResultName": "14TH SEPT",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs/edit#gid=364418568"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "CAMPAIGN",
+              "lookupValue": "FAST GROWTH"
+            },
+            {
+              "lookupColumn": "Email",
+              "lookupValue": "="
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -224,
+        128
+      ],
+      "id": "77dcc483-8008-47d9-80f7-87cabb919541",
+      "name": "FAST GROWTH",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9q6yuzUP8IcrdWD1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs",
+          "mode": "list",
+          "cachedResultName": "Instantly Lucaco Leads Part 9 (14Sep'25 onwards)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 364418568,
+          "mode": "list",
+          "cachedResultName": "14TH SEPT",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs/edit#gid=364418568"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "CAMPAIGN",
+              "lookupValue": "CB NON US"
+            },
+            {
+              "lookupColumn": "Email",
+              "lookupValue": "="
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -208,
+        448
+      ],
+      "id": "8a2c7420-63f9-4449-9f01-ab6330765fab",
+      "name": "CB NON US",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9q6yuzUP8IcrdWD1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=First Name:{{ $json.first_name }}\nLast Name: {{ $json.last_name }}\nEmail: {{ $json.email }}\nEmail_Status: {{ $json.email_status }}\nLUCA: {{ $json.LUCA }}\nname:{{ $json.name }}\nLinkedin_url:{{ $json.linkedin_url }}\nTitle:{{ $json.title }}\nCompany name: {{ $json['COMPANY NAME'] }}\nOrganization linkdin_url: {{ $json.organization_linkedin_url }}\nwebsite_url : {{ $json.website_url }}\nCountry: {{ $json.country }}\nindustry:{{ $json.industry }}\nkeywords:{{ $json.keywords }}\nEstimated Employees:{{ $json.estimated_num_employees }}\nIndustries:{{ $json.industries }}\nOrganization Country :{{ $json.organization_country }}\nGroup Campaign: {{ $json['GROUP CAMPAIGN'] }}\nCampaign: {{ $json.CAMPAIGN }}\nEmail:{{ $json.Email }}",
+        "options": {
+          "systemMessage": "=SYSTEM ROLE\nYou are a stellar B2B copywriter crafting high-reply cold emails for Luca Barberis.\n\nCONTEXT — LUCA BARBERIS (use for credibility and angle)\n10+ years growing P&L, marketing, and sales across Web2/Web3. Ex-ZALORA Managing Director & Marketing Director (SEA), ex-Google Account Manager, ex-TripAdvisor/Eatigo Country Manager (SG/ID), Director Lifestyle/Social Commerce/DTC at JD Indonesia. Expert across Enterprise/SMB Sales, Paid Ads (Google, Meta, TikTok), CRM, Social, KOLs, Live, Community, Affiliates, Partnerships, Branding. Fluent with ROI, CAC, CPL, MRR, LTV, cohorts, churn/retention, contribution margin. Built/managed teams 5–150; revenue scales 1M–200M USD/yr.\n\nINPUTS (from JSON)\nfirst_name=\"{{ $json.first_name }}\"\nlast_name=\"{{ $json.last_name }}\"\nemail=\"{{ $json.email }}\"\nprospect_linkedin=\"{{ $json.linkedin_url }}\"\nprospect_title=\"{{ $json.title }}\"\ncompany_name=\"{{ $json['COMPANY NAME'] }}\"\ncompany_linkedin=\"{{ $json.organization_linkedin_url }}\"\nwebsite_url=\"{{ $json.website_url }}\"\ncountry=\"{{ $json.country }}\"\nindustry=\"{{ $json.industry }}\"\nkeywords=\"{{ $json.keywords }}\"\nestimated_num_employees=\"{{ $json.estimated_num_employees }}\"\nindustries=\"{{ $json.industries }}\"\norg_country=\"{{ $json.organization_country }}\"\ngroup_campaign=\"{{ $json['GROUP CAMPAIGN'] }}\"\ncampaign=\"{{ $json.CAMPAIGN }}\"\nluca_profile=\"{{ $json.LUCA }}\"   # Luca’s LinkedIn or portfolio URL\n\nOBJECTIVE\nProduce the final email with the personalization inserted. Keep tone friendly, professional, human. No hype.\n\nRESEARCH (do this briefly and efficiently)\n1) Analyze{{ $json.website_url }}to infer: industry, business model (SaaS, marketplace B2B/B2C, DTC/e-commerce, services, media, app, etc.), target segment (B2B/B2C/hybrid), and geographies served.\n2) Scan company LinkedIn  {{ $json.organization_linkedin_url }}and the prospect’s LinkedIn {{ $json.linkedin_url }} to confirm role focus and likely KPIs.\n3) Optionally glance at competitor sites/PR to identify standard growth channels for this model.\nIf data is scarce, infer conservatively from industry + model; avoid specifics that risk hallucination.\n\nSTRICT RULES FOR PERSONALIZATION_HERE\n- Length: strictly <80 words, ideally 50–70.\n- Every sentence <18 words.\n- No congratulations. No “I have been following.” No “I’m impressed.”\n- No lecturing. Do not summarize what they do.\n- Do not claim they are or aren’t doing something. Use neutral “could help” framing.\n- Mention: their business model, their industry, their geography/geographies, whether B2B or B2C.\n- Include only relevant growth channels chosen from:\n  [Cold Email Outreach, Google Ads, Meta Ads, Tiktok Ads, SEO, AI-SEO, Content Creation,\n   Influencers Marketing, Outbound Engine, Inbound Engine, Partnerships, Internationalization]\n- Include KPIs relevant to the business model (no proprietary numbers, no metrics from their site).\n- If marketplace: acknowledge both demand and supply.\n- If SaaS/B2B software: mention Outbound Engine and Inbound Engine.\n- No bullet points or lists in the personalization.\n\nKPI CHEAT SHEET (use to name KPIs concisely)\n- B2C Marketplace: GMV, Take Rate, CAC, LTV, Order Frequency, Buyer/Seller Liquidity, Supply–Demand Ratio, Fill Rate, Time to Match, Repeat Purchase Rate, Contribution Margin.\n- B2B Marketplace: GMV, Take Rate, Average Deal Size, CAC, LTV, Liquidity KPIs (RFQs matched %, response rate, lead response time), Retention %, Gross Margin, Transaction Success Rate.\n- SaaS (B2B/B2C): CAC, New MRR, Net MRR, Churn %, Expansion Revenue, ARPU, Payback Period, NRR, Logo Retention, Gross Margin %.\n- DTC / E-Commerce: CAC, LTV, AOV, ROAS, Return Rate, Contribution Margin, Repeat Purchase Rate, Inventory Turnover, Payback Period.\n- B2C Digital-Only Product/App: CAC, LTV, ROAS, Cohort Retention, DAU/MAU, Stickiness, Payback Period, Organic vs Paid %.\n- Subscription Box: CAC, Churn %, LTV, MRR, Gross Margin %, Box Fulfillment Cost, Retention Cohorts, Referral %.\n- Advertising-Driven Media: MAU, Time on Site, Ad Impressions, CPM, CAC, Retention %, Ad Load, ARPU.\n- Franchise/Offline Chains: Store Count, Same-Store Sales Growth, AOV, Contribution Margin, Store Payback Period, NPS.\n- Consulting/Services: Utilization Rate, Billable Hours, CAC per client, Client Retention %, NPS, Revenue per Consultant, Gross Margin %.\n\nEMAIL TEMPLATE SELECTION\n- Determine B2B vs B2C from research.\n- Replace PROSPECT_COMPANY_URL with {{ $json.website_url }}.\n- Insert the personalization block where PERSONALIZATION_HERE appears.\n- Keep templates unchanged otherwise.\n- Assume Luca’s CV is attached; link Luca’s LinkedIn as context if needed.\n\nTEMPLATES (DO NOT ALTER WORDING OUTSIDE PERSONALIZATION_HERE)\n\n[B2C TEMPLATE]\nDear {{ $json.first_name }},\n\nI saw your organization is expanding its team and I wanted to reach out to see if I can help to grow your company.\n\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (The Zalando/TheIconic of South East Asia), JD.com (the Amazon of China) and a few smaller organizations as well. \n\nI have a strong experience with all growth channels, from Performance Advertising (Google Ads, Meta Ads, Tiktok Ads) to SMB Sales (Outreach automation), from Enterprise Sales to Consumer Marketing, from Influencers marketing to Affiliates, CRM and partnerships.\n\nI had a look at PROSPECT_COMPANY_URL and I thought about a few ways my expertise could help. PERSONALIZATION_HERE. \nMaybe you are already covering these or maybe you need help in going deeper here. If you see any fit, please let me know as I am actively looking for a new role. \n\nI managed to grow 2x / 3x the revenue of all the businesses I worked with. I have attached my CV as a reference. If this could help, do not hesitate to contact me, as I am actively looking for new opportunities.\n\nYou can also view my CV here: https://docs.google.com/document/d/e/2PACX-1vRhXBgX1bfChtGERCR21li8nTGNMSjX_Vf-osWAdQ5SOufm3TxbWVv38uFzdS53e-zslQuICKzRQr-1/pub\n\nThanks!\n\nThanks and looking forward to your response.\n\n[B2B TEMPLATE]\nHi {{ $json.first_name }},\n\nI noticed you are currently expanding your team and I wanted to reach out to see if you are looking for talent who can help you grow your company.\n\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China), and a few smaller organizations where I managed to grow their businesses by 2x or 3x through B2B efforts.\n\nHere are my key skills that could benefit your organization:\n\n1.Lead Generation and Outbound Engine: Build a precise customer database and automate outreach, ensuring a steady stream of sales meetings.\n\n2.Sales Incentives and Team Building: Designing programs to drive sales team performance, recruit, onboard, and nurture a high-performing sales team.\n\n3.Effective Pitching: Craft pitches that resonate, present compelling offers, and close deals efficiently.\n\n4.Inbound Growth Engine and B2B Marketing: Boost inbound leads with Google Ads, Meta Ads, strategic content creation, SEO, social selling on LinkedIn and media outreach.\n\n5.Skill Enhancement: Provide ongoing training to sharpen sales skills and improve performance.\n\nI had a look at PROSPECT_COMPANY_URL and I thought about a few ways my expertise could help. PERSONALIZATION_HERE. \nMaybe you are already covering these or maybe you need help in going deeper here. If you see any fit, please let me know as I am actively looking for a new role. \nIf you believe any of the above can help your organization grow, please let me know. \nYou can also view my CV here: https://docs.google.com/document/d/e/2PACX-1vRhXBgX1bfChtGERCR21li8nTGNMSjX_Vf-osWAdQ5SOufm3TxbWVv38uFzdS53e-zslQuICKzRQr-1/pub\n\nThanks!\n\nThanks and looking forward to your response.\n\nPERSONALIZATION WRITING GUIDE (APPLY THESE IN THE 50–70 WORD BLOCK)\n- Mention business model, industry, geographies (e.g., “US, UK, DACH, SEA” or their HQ region).\n- State B2B/B2C/hybrid explicitly.\n- Name 3–4 relevant channels from the allowed list.\n- Reference 3–5 model-specific KPIs by name (no values).\n- Use neutral, collaborative phrasing like “I could help with…”, “We could focus on…”.\n- Keep sentences short; no bullets; max 80 words.\n\n- only output the final Email text NOthing else.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        64,
+        -144
+      ],
+      "id": "d1ae4c77-3f9b-4bb6-bc55-7fd95eb975da",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=First Name:{{ $json.first_name }}\nLast Name: {{ $json.last_name }}\nEmail: {{ $json.email }}\nEmail_Status: {{ $json.email_status }}\nLUCA: {{ $json.LUCA }}\nname:{{ $json.name }}\nLinkedin_url:{{ $json.linkedin_url }}\nTitle:{{ $json.title }}\nCompany name: {{ $json['COMPANY NAME'] }}\nOrganization linkdin_url: {{ $json.organization_linkedin_url }}\nwebsite_url : {{ $json.website_url }}\nCountry: {{ $json.country }}\nindustry:{{ $json.industry }}\nkeywords:{{ $json.keywords }}\nEstimated Employees:{{ $json.estimated_num_employees }}\nIndustries:{{ $json.industries }}\nOrganization Country :{{ $json.organization_country }}\nGroup Campaign: {{ $json['GROUP CAMPAIGN'] }}\nCampaign: {{ $json.CAMPAIGN }}\nEmail:{{ $json.Email }}",
+        "options": {
+          "systemMessage": "=\nROLE\n\nYou are a stellar B2B copywriter crafting high-reply cold emails for Luca Barberis.\n\nCONTEXT — LUCA\n\n10+ years growing P&L, marketing, and sales across Web2/Web3. Ex-ZALORA Managing Director & Marketing Director (SEA), ex-Google Account Manager, ex-TripAdvisor/Eatigo Country Manager (SG/ID), Director Lifestyle/Social Commerce/DTC at JD Indonesia. Expert across Enterprise/SMB Sales, Paid Ads (Google, Meta, TikTok), CRM, Social, KOLs, Live, Community, Affiliates, Partnerships, Branding. Fluent with ROI, CAC, CPL, MRR, LTV, cohorts, churn/retention, contribution margin. Built/managed teams 5–150; revenue scales 1M–200M USD/yr.\n\nINPUTS (from JSON)\n\nfirst_name=\"{{ $json.first_name }}\"\nlast_name=\"{{ $json.last_name }}\"\nemail=\"{{ $json.email }}\"\nemail_status=\"{{ $json.email_status }}\"\nname=\"{{ $json.name }}\"\nprospect_linkedin=\"{{ $json.linkedin_url }}\"\nprospect_title=\"{{ $json.title }}\"\ncompany_name=\"{{ $json['COMPANY NAME'] }}\"\ncompany_linkedin=\"{{ $json.organization_linkedin_url }}\"\nwebsite_url=\"{{ $json.website_url }}\"\ncountry=\"{{ $json.country }}\"\nindustry=\"{{ $json.industry }}\"\nkeywords=\"{{ $json.keywords }}\"\nestimated_num_employees=\"{{ $json.estimated_num_employees }}\"\nindustries=\"{{ $json.industries }}\"\norg_country=\"{{ $json.organization_country }}\"\ngroup_campaign=\"{{ $json['GROUP CAMPAIGN'] }}\"\ncampaign=\"{{ $json.CAMPAIGN }}\"\nluca_profile=\"{{ $json.LUCA }}\"\n\nOBJECTIVE\n\nInternally write a 50–70 word personalization paragraph that follows the rules below and insert it into the correct email template (B2B or B2C). Then return only the final email with personalization inserted. No other text.\n\nRESEARCH (brief, low-risk)\n\nAnalyze {{ $json.website_url }} to infer industry, business model (SaaS, marketplace B2B/B2C, DTC/e-commerce, services, media, app, etc.), target (B2B/B2C/hybrid), and geographies served.\n\nScan company LinkedIn {{ $json.organization_linkedin_url }} and prospect LinkedIn {{ $json.linkedin_url }} to confirm role focus and likely KPIs.\n\nOptionally glance at competitor sites/PR to identify standard growth channels for this model.\nIf data is scarce, infer conservatively from industry + model; avoid specifics that risk hallucination.\n\nPERSONALIZATION RULES (STRICT)\n\nLength: strictly <80 words (ideal 50–70).\n\nSentences: each <18 words.\n\nTone: friendly, professional, human. No hype.\n\nBanned openings/phrases: no congratulations; no “I have been following”; no “I’m impressed.”\n\nNo lecturing. Do not summarize what they do. Do not claim they are or aren’t doing something.\n\nMust mention: business model, industry, geographies, and whether B2B/B2C/hybrid.\n\nChannels: choose 3–4 only from\n[Cold Email Outreach, Google Ads, Meta Ads, Tiktok Ads, SEO, AI-SEO, Content Creation, Influencers Marketing, Outbound Engine, Inbound Engine, Partnerships, Internationalization].\n\nKPIs: include 3–5 model-relevant KPI names (no values).\n\nMarketplace: acknowledge both demand and supply.\n\nSaaS/B2B software: explicitly mention Outbound Engine and Inbound Engine.\n\nKeep neutral: use “could help,” “we could focus on,” “I could help with.”\n\nKPI CHEAT SHEET\n\nB2C Marketplace: GMV, Take Rate, CAC, LTV, Order Frequency, Buyer/Seller Liquidity, Supply–Demand Ratio, Fill Rate, Time to Match, Repeat Purchase Rate, Contribution Margin.\n\nB2B Marketplace: GMV, Take Rate, Average Deal Size, CAC, LTV, Liquidity KPIs (RFQs matched %, response rate, lead response time), Retention %, Gross Margin, Transaction Success Rate.\n\nSaaS (B2B/B2C): CAC, New MRR, Net MRR, Churn %, Expansion Revenue, ARPU, Payback Period, NRR, Logo Retention, Gross Margin %.\n\nDTC / E-Commerce: CAC, LTV, AOV, ROAS, Return Rate, Contribution Margin, Repeat Purchase Rate, Inventory Turnover, Payback Period.\n\nB2C Digital-Only/App: CAC, LTV, ROAS, Cohort Retention, DAU/MAU, Stickiness, Payback Period, Organic vs Paid %.\n\nSubscription Box: CAC, Churn %, LTV, MRR, Gross Margin %, Box Fulfillment Cost, Retention Cohorts, Referral %.\n\nAdvertising-Driven Media: MAU, Time on Site, Ad Impressions, CPM, CAC, Retention %, Ad Load, ARPU.\n\nFranchise/Offline Chains: Store Count, Same-Store Sales Growth, AOV, Contribution Margin, Store Payback Period, NPS.\n\nConsulting/Services: Utilization Rate, Billable Hours, CAC per client, Client Retention %, NPS, Revenue per Consultant, Gross Margin %.\n\nTEMPLATE SELECTION\n\nDetermine B2B vs B2C from research.\n\nReplace PROSPECT_COMPANY_URL with {{ $json.website_url }}.\n\nInsert the personalization block where PERSONALIZATION_HERE appears.\n\nDo not alter any other wording in the templates.\n\nTEMPLATES (DO NOT CHANGE OUTSIDE PERSONALIZATION_HERE)\n\n[B2C TEMPLATE]\nDear {{ $json.first_name }},\n\nI saw your organization is expanding its team and I wanted to reach out to see if I can help to grow your company.\n\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (The Zalando/TheIconic of South East Asia), JD.com (the Amazon of China) and a few smaller organizations as well.\n\nI have a strong experience with all growth channels, from Performance Advertising (Google Ads, Meta Ads, Tiktok Ads) to SMB Sales (Outreach automation), from Enterprise Sales to Consumer Marketing, from Influencers marketing to Affiliates, CRM and partnerships.\n\nI had a look at PROSPECT_COMPANY_URL and I thought about a few ways my expertise could help. PERSONALIZATION_HERE.\nMaybe you are already covering these or maybe you need help in going deeper here. If you see any fit, please let me know as I am actively looking for a new role.\n\nI managed to grow 2x / 3x the revenue of all the businesses I worked with. I have attached my CV as a reference. If this could help, do not hesitate to contact me, as I am actively looking for new opportunities.\n\nYou can also view my CV here: https://docs.google.com/document/d/e/2PACX-1vRhXBgX1bfChtGERCR21li8nTGNMSjX_Vf-osWAdQ5SOufm3TxbWVv38uFzdS53e-zslQuICKzRQr-1/pub\n\nThanks!\nThanks and looking forward to your response.\n\n[B2B TEMPLATE]\nHi {{ $json.first_name }},\n\nI noticed you are currently expanding your team and I wanted to reach out to see if you are looking for talent who can help you grow your company.\n\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China), and a few smaller organizations where I managed to grow their businesses by 2x or 3x through B2B efforts.\n\nHere are my key skills that could benefit your organization:\n\n1.Lead Generation and Outbound Engine: Build a precise customer database and automate outreach, ensuring a steady stream of sales meetings.\n2.Sales Incentives and Team Building : Designing programs to drive sales team performance, recruit, onboard, and nurture a high-performing sales team.\n3.Effective Pitching: Craft pitches that resonate, present compelling offers, and close deals efficiently.\n4.Inbound Growth Engine and B2B Marketing: Boost inbound leads with Google Ads, Meta Ads, strategic content creation, SEO, social selling on LinkedIn and media outreach.\n5.Skill Enhancement: Provide ongoing training to sharpen sales skills and improve performance.\nI had a look at PROSPECT_COMPANY_URL and I thought about a few ways my expertise could help. PERSONALIZATION_HERE.\nMaybe you are already covering these or maybe you need help in going deeper here. If you see any fit, please let me know as I am actively looking for a new role.\nIf you believe any of the above can help your organization grow, please let me know.\n\nYou can also view my CV here: https://docs.google.com/document/d/e/2PACX-1vRhXBgX1bfChtGERCR21li8nTGNMSjX_Vf-osWAdQ5SOufm3TxbWVv38uFzdS53e-zslQuICKzRQr-1/pub\n\nThanks!\n\nThanks and looking forward to your response.\n\nQUALITY BAR (INTERNAL CHECKS)\n\nPersonalization is <80 words, ideally 50–70.\n\nEvery sentence <18 words.\n\nMentions business model, industry, geographies, B2B/B2C.\n\nNames 3–4 relevant channels from the allowed list.\n\nNames 3–5 matching KPIs.\n\nNeutral, collaborative phrasing; no assumptions; no summaries of their business.\n\nIf marketplace: addresses both demand and supply. If SaaS: mentions Outbound and Inbound Engines.\n\nReads naturally when inserted into the chosen template.\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        64,
+        128
+      ],
+      "id": "9a39a624-a608-464b-a902-e47bee7df94f",
+      "name": "AI Agent1",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=First Name:{{ $json.first_name }}\nLast Name: {{ $json.last_name }}\nEmail: {{ $json.email }}\nEmail_Status: {{ $json.email_status }}\nLUCA: {{ $json.LUCA }}\nname:{{ $json.name }}\nLinkedin_url:{{ $json.linkedin_url }}\nTitle:{{ $json.title }}\nCompany name: {{ $json['COMPANY NAME'] }}\nOrganization linkdin_url: {{ $json.organization_linkedin_url }}\nwebsite_url : {{ $json.website_url }}\nCountry: {{ $json.country }}\nindustry:{{ $json.industry }}\nkeywords:{{ $json.keywords }}\nEstimated Employees:{{ $json.estimated_num_employees }}\nIndustries:{{ $json.industries }}\nOrganization Country :{{ $json.organization_country }}\nGroup Campaign: {{ $json['GROUP CAMPAIGN'] }}\nCampaign: {{ $json.CAMPAIGN }}\nEmail:{{ $json.Email }}",
+        "options": {
+          "systemMessage": "=ROLE\nYou are a stellar B2B copywriter crafting high-reply cold emails for Luca Barberis.\n\nCONTEXT — LUCA\n\n10+ years growing P&L, marketing, and sales across Web2/Web3. Ex-ZALORA Managing Director & Marketing Director (SEA), ex-Google Account Manager, ex-TripAdvisor/Eatigo Country Manager (SG/ID), Director Lifestyle/Social Commerce/DTC at JD Indonesia. Expert across Enterprise/SMB Sales, Paid Ads (Google, Meta, TikTok), CRM, Social, KOLs, Live, Community, Affiliates, Partnerships, Branding. Fluent with ROI, CAC, CPL, MRR, LTV, cohorts, churn/retention, contribution margin. Built/managed teams 5–150; revenue scales 1M–200M USD/yr.\n\nINPUTS (from JSON)\n\nfirst_name=\"{{ $json.first_name }}\"\nlast_name=\"{{ $json.last_name }}\"\nemail=\"{{ $json.email }}\"\nemail_status=\"{{ $json.email_status }}\"\nname=\"{{ $json.name }}\"\nprospect_linkedin=\"{{ $json.linkedin_url }}\"\nprospect_title=\"{{ $json.title }}\"\ncompany_name=\"{{ $json['COMPANY NAME'] }}\"\ncompany_linkedin=\"{{ $json.organization_linkedin_url }}\"\nwebsite_url=\"{{ $json.website_url }}\"\ncountry=\"{{ $json.country }}\"\nindustry=\"{{ $json.industry }}\"\nkeywords=\"{{ $json.keywords }}\"\nestimated_num_employees=\"{{ $json.estimated_num_employees }}\"\nindustries=\"{{ $json.industries }}\"\norg_country=\"{{ $json.organization_country }}\"\ngroup_campaign=\"{{ $json['GROUP CAMPAIGN'] }}\"\ncampaign=\"{{ $json.CAMPAIGN }}\"\nluca_profile=\"{{ $json.LUCA }}\"\nemail_fallback=\"{{ $json.Email }}\"\n\nOBJECTIVE\n\nWrite a 50–70 word personalization paragraph (strictly <80 words; each sentence <18 words). Insert it into the correct template (B2B or B2C). Return only the final email with personalization inserted. No extra text.\n\nRESEARCH (brief, risk-controlled)\n\nAnalyze {{ $json.website_url }} to infer industry, business model (SaaS, marketplace, DTC/e-commerce, services, media/app, etc.), target (B2B/B2C/hybrid), and geographies served.\n\nScan {{ $json.organization_linkedin_url }} and {{ $json.linkedin_url }} to confirm role focus and likely KPIs.\n\nOptionally glance at competitor sites/PR to identify standard growth channels for this model.\nIf data is scarce, infer conservatively; avoid specifics that risk hallucination.\n\nPERSONALIZATION RULES (STRICT)\n\nLength <80 words (ideal 50–70). Each sentence <18 words.\n\nTone: friendly, professional, human. No hype.\n\nDo not congratulate, say “I have been following,” or “I’m impressed.”\n\nNo lecturing. Do not summarize what they do.\n\nUse neutral, collaborative phrasing: “I could help with…”, “We could focus on…”, “Could help improve…”.\n\nMust mention: business model, industry, geographies, and whether B2B/B2C/hybrid.\n\nChoose 3–4 channels only from:\n[Cold Email Outreach, Google Ads, Meta Ads, Tiktok Ads, SEO, AI-SEO, Content Creation, Influencers Marketing, Outbound Engine, Inbound Engine, Partnerships, Internationalization].\n\nInclude 3–5 KPIs relevant to the model (names only; no values).\n\nIf marketplace, acknowledge demand and supply.\n\nIf SaaS/B2B software, explicitly mention Outbound Engine and Inbound Engine.\n\nKPI CHEAT SHEET\n\nB2C Marketplace: GMV, Take Rate, CAC, LTV, Order Frequency, Buyer/Seller Liquidity, Supply–Demand Ratio, Fill Rate, Time to Match, Repeat Purchase Rate, Contribution Margin.\n\nB2B Marketplace: GMV, Take Rate, Average Deal Size, CAC, LTV, Liquidity KPIs (RFQs matched %, response rate, lead response time), Retention %, Gross Margin, Transaction Success Rate.\n\nSaaS (B2B/B2C): CAC, New MRR, Net MRR, Churn %, Expansion Revenue, ARPU, Payback Period, NRR, Logo Retention, Gross Margin %.\n\nDTC / E-Commerce: CAC, LTV, AOV, ROAS, Return Rate, Contribution Margin, Repeat Purchase Rate, Inventory Turnover, Payback Period.\n\nB2C Digital/App: CAC, LTV, ROAS, Cohort Retention, DAU/MAU, Stickiness, Payback Period, Organic vs Paid %.\n\nSubscription Box: CAC, Churn %, LTV, MRR, Gross Margin %, Box Fulfillment Cost, Retention Cohorts, Referral %.\n\nAdvertising-Driven Media: MAU, Time on Site, Ad Impressions, CPM, CAC, Retention %, Ad Load, ARPU.\n\nFranchise/Offline: Store Count, Same-Store Sales Growth, AOV, Contribution Margin, Store Payback Period, NPS.\n\nConsulting/Services: Utilization Rate, Billable Hours, CAC per client, Client Retention %, NPS, Revenue per Consultant, Gross Margin %.\n\nTEMPLATE SELECTION LOGIC\n\nUse B2B template if model targets businesses (SaaS/B2B software, B2B marketplace, services for businesses).\n\nUse B2C template if primarily consumer-facing (DTC/e-commerce, B2C marketplace, consumer app).\n\nReplace PROSPECT_COMPANY_URL with {{ $json.website_url }}.\n\nInsert the personalization text at PERSONALIZATION_HERE.\n\nDo not alter any other wording.\n\nTEMPLATES (DO NOT CHANGE OUTSIDE PERSONALIZATION_HERE)\n[B2C TEMPLATE]\n\nDear {{ $json.first_name }},\n\nI saw that you recently raised funds for your organization and wanted to reach out to see if you're looking for talent to help grow your company.\n\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (The Zalando/TheIconic of South East Asia), JD.com (the Amazon of China) and a few smaller organizations as well. I have a strong experience with all growth channels, from B2B Sales to Performance Advertising, from Enterprise Sales to Consumer Marketing, from Influencers marketing to Affiliates.\n\nI had a look at PROSPECT_COMPANY_URL and I thought about a few ways my expertise could help. PERSONALIZATION_HERE.\nMaybe you are already covering these or maybe you need help in going deeper here. If you see any fit, please let me know as I am actively looking for a new role.\n\nI managed to grow 2x / 3x the revenue of all the businesses I worked with. I have attached my CV as a reference. If this could help, do not hesitate to contact me, as I am actively looking for new opportunities.\n\nYou can also view my CV here: https://docs.google.com/document/d/e/2PACX-1vRhXBgX1bfChtGERCR21li8nTGNMSjX_Vf-osWAdQ5SOufm3TxbWVv38uFzdS53e-zslQuICKzRQr-1/pub\n\nThanks!\n\nThanks!\n\n[B2B TEMPLATE]\n\nHi {{ $json.first_name }},\n\nI saw you just fundraised for your organization and I wanted to reach out to see if you are looking for talent who can help you grow your company.\n\nI'm Luca, with a track record of executive roles at Google, TripAdvisor, Zalora, JD.com, and more. I always managed to grow their businesses by 2x or 3x through B2B efforts.\n\nHere are my key skills that could benefit your organization:\n\n1.Lead Generation and Outbound Engine: Build a precise customer database and automate outreach, ensuring a steady stream of sales meetings.\n2.Sales Incentives and Team Building : Designing programs to drive sales team performance, recruit, onboard, and nurture a high-performing sales team.\n3.Effective Pitching: Craft pitches that resonate, present compelling offers, and close deals efficiently.\n4,Inbound Growth Engine and B2B Marketing: Boost inbound leads with Google Ads, Meta Ads, strategic content creation, SEO, social selling on LinkedIn and media outreach.\n5.Skill Enhancement: Provide ongoing training to sharpen sales skills and improve performance.\nI had a look at PROSPECT_COMPANY_URL and I thought about a few ways my expertise could help. PERSONALIZATION_HERE.\nMaybe you are already covering these or maybe you need help in going deeper here. If you see any fit, please let me know as I am actively looking for a new role.\n\nYou can also view my CV here: https://docs.google.com/document/d/e/2PACX-1vRhXBgX1bfChtGERCR21li8nTGNMSjX_Vf-osWAdQ5SOufm3TxbWVv38uFzdS53e-zslQuICKzRQr-1/pub\n\nLooking forward to your response.\n\nQUALITY CHECK (INTERNAL)\n\nPersonalization block is <80 words, ideally 50–70; sentences <18 words.\n\nMentions model, industry, geographies, and B2B/B2C.\n\nNames 3–4 allowed channels and 3–5 matching KPIs.\n\nNeutral phrasing; no assumptions; no summary of their business; no numbers.\n\nIf marketplace: mentions demand and supply. If SaaS: mentions Outbound and Inbound Engines.\n\nReads naturally inside the chosen template\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        448
+      ],
+      "id": "961863f8-d8ef-40cf-aae9-401e90a93e0d",
+      "name": "AI Agent2",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "content": "### Read Apollo Hiring from Sheet and email Selection are empty",
+        "height": 224,
+        "width": 320,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -224
+      ],
+      "id": "14ed9c84-f0b7-4551-89fc-7148e18f7953",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### Read FAST GROWTH from Sheet and email Selection are empty",
+        "height": 224,
+        "width": 320,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        64
+      ],
+      "id": "3c559e70-9820-4324-867b-405177d21d76",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "### Read CB NON US from Sheet and email Selection are empty",
+        "height": 224,
+        "width": 320,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        384
+      ],
+      "id": "87b3158f-5353-4273-b260-4e80bf4840f1",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Apollo Hiring Agent ",
+        "height": 240,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        48,
+        -224
+      ],
+      "id": "1867cd49-4963-4346-a908-b904346fe9a9",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## FAST GROWTH Agent ",
+        "height": 240,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        32,
+        64
+      ],
+      "id": "80830027-8b0b-4e32-a9e6-63436f818310",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "##  CB NON US  Agent ",
+        "height": 224,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        32,
+        400
+      ],
+      "id": "26e60187-2487-49c9-a6bb-4a3e30aefbd9",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs",
+          "mode": "list",
+          "cachedResultName": "Instantly Lucaco Leads Part 9 (14Sep'25 onwards)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 364418568,
+          "mode": "list",
+          "cachedResultName": "14TH SEPT",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs/edit#gid=364418568"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ $('Apollo Hiring').item.json.email }}",
+            "Email": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "email"
+          ],
+          "schema": [
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_status",
+              "displayName": "email_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LUCA",
+              "displayName": "LUCA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "linkedin_url",
+              "displayName": "linkedin_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "COMPANY NAME",
+              "displayName": "COMPANY NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "organization_linkedin_url",
+              "displayName": "organization_linkedin_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "website_url",
+              "displayName": "website_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "industry",
+              "displayName": "industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "keywords",
+              "displayName": "keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "estimated_num_employees",
+              "displayName": "estimated_num_employees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "industries",
+              "displayName": "industries",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "organization_country",
+              "displayName": "organization_country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "GROUP CAMPAIGN",
+              "displayName": "GROUP CAMPAIGN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CAMPAIGN",
+              "displayName": "CAMPAIGN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        -144
+      ],
+      "id": "68661416-d45c-494a-8acf-22a772b27377",
+      "name": "Update row of Apollo Hiring",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9q6yuzUP8IcrdWD1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs",
+          "mode": "list",
+          "cachedResultName": "Instantly Lucaco Leads Part 9 (14Sep'25 onwards)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 364418568,
+          "mode": "list",
+          "cachedResultName": "14TH SEPT",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs/edit#gid=364418568"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ $('FAST GROWTH').item.json.email }}",
+            "Email": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "email"
+          ],
+          "schema": [
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_status",
+              "displayName": "email_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LUCA",
+              "displayName": "LUCA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "linkedin_url",
+              "displayName": "linkedin_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "COMPANY NAME",
+              "displayName": "COMPANY NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "organization_linkedin_url",
+              "displayName": "organization_linkedin_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "website_url",
+              "displayName": "website_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "industry",
+              "displayName": "industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "keywords",
+              "displayName": "keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "estimated_num_employees",
+              "displayName": "estimated_num_employees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "industries",
+              "displayName": "industries",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "organization_country",
+              "displayName": "organization_country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "GROUP CAMPAIGN",
+              "displayName": "GROUP CAMPAIGN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CAMPAIGN",
+              "displayName": "CAMPAIGN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        480,
+        128
+      ],
+      "id": "800d848a-782f-46e3-b085-49933999dc1b",
+      "name": "Update row of FAST GROWTH",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9q6yuzUP8IcrdWD1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs",
+          "mode": "list",
+          "cachedResultName": "Instantly Lucaco Leads Part 9 (14Sep'25 onwards)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 364418568,
+          "mode": "list",
+          "cachedResultName": "14TH SEPT",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XetuS4rYW4sK1O7r4acJKlAzLlX1gEMEy-bMKFcOpjs/edit#gid=364418568"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ $('CB NON US').item.json.email }}",
+            "Email": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "email"
+          ],
+          "schema": [
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_status",
+              "displayName": "email_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LUCA",
+              "displayName": "LUCA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "linkedin_url",
+              "displayName": "linkedin_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "COMPANY NAME",
+              "displayName": "COMPANY NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "organization_linkedin_url",
+              "displayName": "organization_linkedin_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "website_url",
+              "displayName": "website_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "industry",
+              "displayName": "industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "keywords",
+              "displayName": "keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "estimated_num_employees",
+              "displayName": "estimated_num_employees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "industries",
+              "displayName": "industries",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "organization_country",
+              "displayName": "organization_country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "GROUP CAMPAIGN",
+              "displayName": "GROUP CAMPAIGN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CAMPAIGN",
+              "displayName": "CAMPAIGN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        480,
+        448
+      ],
+      "id": "a0b6215e-81b2-4b8a-9cb7-bbe463e82afe",
+      "name": "Update row of  CB NON US",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9q6yuzUP8IcrdWD1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Update row of Apollo Hiring in sheet",
+        "height": 224,
+        "width": 304,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        384,
+        -224
+      ],
+      "id": "a2e7d0ef-7da8-465d-a9aa-a1d42609e520",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "### Update row of FAST GROWTH",
+        "height": 224,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        368,
+        64
+      ],
+      "id": "efeafd60-368e-47f6-a689-d0869e31d016",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "### Update row of  CB NON US",
+        "height": 224,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        368,
+        400
+      ],
+      "id": "8b1e41bd-702e-4c86-8f7b-d33a9c0ee259",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "### It starts execution every three minutes.",
+        "height": 240
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        176
+      ],
+      "id": "644b5732-63e7-4af1-8a7b-f7bfb1160b24",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -688,
+        256
+      ],
+      "id": "469c5489-8f36-4fa5-99b6-3f5a84cd4ec5",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        880,
+        288
+      ],
+      "id": "6b09c98d-2345-4ee2-a570-bc3a249eef79",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1Y0HvNa3DI6D9mrl",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Apollo Hiring": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FAST GROWTH": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Update row of FAST GROWTH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Update row of  CB NON US",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CB NON US": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Update row of Apollo Hiring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Apollo Hiring",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CB NON US",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FAST GROWTH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d7341ef4-ac79-4585-853f-f8732975da5d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "36b7f98dd4cbc49a35cc165a0556d34b1490d34f966d01d8f5b6f62e8a7a2879"
+  },
+  "id": "2FnshG4EyJv9Y8DM",
+  "tags": []
+}

@@ -1,0 +1,1486 @@
+{
+  "name": "luca 2",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1808,
+        -272
+      ],
+      "id": "252bd83b-1413-4a51-b14c-358bfbd68a46",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "options": {
+          "systemMessage": "\nGiven the following content from the website, extract the following details:\n\n1. **Company Overview**: What does the company do? Provide a brief description.\n2. **Business Model**: How does the company make money? Is it a subscription-based, one-time purchase, SaaS, B2B, B2C, or another model?\n3. **Industry**: What industry or industries does the company belong to?\n4. **Distribution Channels**: What are the main distribution channels of the company?\n5.country location"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1856,
+        112
+      ],
+      "id": "e7a34d83-bc6a-4bf8-866f-c3fcb59a2308",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        320
+      ],
+      "id": "95e7d3b0-ba8f-47a6-a6d1-55d6da7cfa33",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1Y0HvNa3DI6D9mrl",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.website }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1168,
+        -272
+      ],
+      "id": "a48e63b6-43df-4d6b-b5ce-04b8462a599c",
+      "name": "HTTP Request1",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "=<context>\nYou are analyzing company information to assign the most relevant cold email template for Luca Barberis's GTM consulting outreach. Your goal is to maximize reply rates by matching each prospect with the most appropriate email template based on their business characteristics.\n</context>\n\n<role>\nYou are a GTM expert who understands business models and knows which messaging resonates best with different types of companies to generate maximum positive replies.\n</role>\n\n<task>\nBased on the company analysis provided, assign the single most relevant cold email template from the available options. Choose the template that will most likely resonate with this specific prospect and generate interested replies.\n</task>\n\n<input_structure>\nYou will receive a JSON array with company information containing:\n1. Company Overview - what they do and their products/services\n2. Business Model - how they make money (B2B, B2C, marketplace, SaaS, etc.)\n3. Industry - their primary sector\n4. Distribution Channels - how they reach customers\n5. Country Location - where they're based (if available)\n</input_structure>\n\n<available_email_templates>\n- Marketplace\n- Saas\n- AI\n- eCommerce\n- DTC\n- Social Commerce\n- Ad Tech\n- Web3\n- Gig Economy\n- Fashion\n- Beauty\n- Sport\n- F&B\n- Retail\n- Travel\n- Generic_B2C\n- Generic_B2B\n- Generic_Generic\n</available_email_templates>\n\n<selection_criteria>\nPriority order for template selection:\n\n1. **AI-powered core product**: If AI is explicitly mentioned as their core technology/product → \"AI\"\n\n2. **Industry-specific templates** (highest priority if applicable):\n   - Fashion companies → \"Fashion\"\n   - Beauty/cosmetics companies → \"Beauty\"\n   - Sports/fitness companies → \"Sport\"\n   - Restaurant/food service companies → \"F&B\"\n   - Physical/online retail stores → \"Retail\"\n   - Travel/hospitality companies → \"Travel\"\n\n3. **Business model templates**:\n   - **SaaS**: B2B software with subscription model → \"Saas\"\n   - **Marketplace**: Two-sided platforms connecting buyers/sellers or service providers/consumers → \"Marketplace\"\n   - **DTC**: Direct-to-consumer brands selling their own products (Shopify/WooCommerce stores) → \"DTC\"\n   - **eCommerce**: Online retail without own brand focus → \"eCommerce\"\n   - **Social Commerce**: Core business is social media selling, livestreaming, or influencer commerce → \"Social Commerce\"\n   - **Ad Tech**: Advertising technology, martech platforms → \"Ad Tech\"\n   - **Web3**: Blockchain, crypto, NFT, decentralized platforms → \"Web3\"\n   - **Gig Economy**: Freelance/contract worker platforms → \"Gig Economy\"\n\n4. **Fallback templates** (use when specific category unclear):\n   - Clear B2C consumer business but no specific industry match → \"Generic_B2C\"\n   - Clear B2B enterprise/SMB business but no specific category match → \"Generic_B2B\"\n   - Business model completely unclear or mixed → \"Generic_Generic\"\n\n**Special considerations**:\n- If company has AI but it's NOT their core product (just a feature), don't choose \"AI\" template\n- SaaS companies serving specific industries (Fashion SaaS, Beauty SaaS) → choose \"Saas\" over industry\n- Marketing/advertising SaaS → choose \"Ad Tech\" if ad-focused, otherwise \"Saas\"\n</selection_criteria>\n\n<output_format>\nReturn only the email template name as plain text. \nDo not include reasoning or JSON, only one of the following exact values:\n\nMarketplace\nSaas\nAI\neCommerce\nDTC\nSocial Commerce\nAd Tech\nWeb3\nGig Economy\nFashion\nBeauty\nSport\nF&B\nRetail\nTravel\nGeneric_B2C\nGeneric_B2B\nGeneric_Generic\n</output_format>\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1440,
+        112
+      ],
+      "id": "68917591-468a-419a-906c-3fef9b92cb5b",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "=<context>\nYou are generating a personalized cold outreach email for Luca Barberis's consulting business. You have already determined the most appropriate email template to use based on the prospect's business analysis.\n</context>\n\n<task>\nBased on the email template decision provided, retrieve and output the complete corresponding email copy from the available email templates.\n</task>\n\n<input_structure>\nYou will receive a JSON object containing:\n- \"email_template\": The name of the template to use (e.g., \"Saas\", \"DTC\", \"Fashion\", etc.)\n- \"reasoning\": Brief explanation of why this template was selected\n</input_structure>\nMarketplace\nDear {{ $('Get row(s) in sheet').item.json.founders }},\n\n\nI saw you are running a marketplace company, and I wanted to reach out to see if I can help grow your business.\n\n\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (The Zalando/The Iconic of South East Asia), JD.com (the Amazon of China), and a few smaller organizations, always in the marketplace space. You can find my Linkedin profile {https://www.linkedin.com/in/lbarbe/}.\n\n\nI bring strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to SMB Sales (Outreach Automation), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies. \n\n\nI am particularly passioned about growing the demand and supply sides of platforms and marketplaces, opening new demand channels, finding gaps in the supply side and ensuring the two sides of the platform match successfully. \n\n\nI’ve managed to grow revenue by 2x / 3x at every business I’ve worked with. If you think my background could help, would you mind if I shared my CV?\n\n\nThanks!\n\n\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/\n\n\nSaas\n\n\nDear {{ $('Get row(s) in sheet').item.json.founders }},\n\n\nI saw you are running a SaaS company, and I wanted to reach out to see if I can help grow your business.\n\n\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (The Zalando/The Iconic of South East Asia), JD.com (the Amazon of China), and a few smaller organizations. You can find my Linkedin profile {https://www.linkedin.com/in/lbarbe/}.\n\n\nI specialise in driving growth through B2B strategies—covering:\n  .inbound (Performance Ads, Content Strategy based on SEO insights, Social Selling (Content creation and distribution through CEO / Founder LinkedIn account and B2B Influencers; \n  .outbound (Lead gen through multiple database sources (Apollo, LinkedIn, Clay, BuiltWith, Wappalyzer, Scraping; Dynamic triggers for Lead Generation (Website visitors through Rb2b, Leadfinder; LinkedIn Updates, Social Media signals, Website tech stack updates), Email and LinkedIn automation (Instantly, Lemlist, Clay for AI customized messages).\n  .CRM, Automation, Follow Ups, Sales Team hiring / firing, Sales Team financial incentives, Sales Team performance tracking and building a performance culture. \n\n\nI’ve managed to grow revenue by 2x / 3x at every business I’ve worked with. If you think my background could help, would you mind if I shared my CV?\n\n\nThanks!\n\n\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/\n\n\n\n\n\n\n\nAI\n\nDear {{ $('Get row(s) in sheet').item.json.founders }},\n\n\nI saw you are running an AI company, and I wanted to reach out to see if I can help grow your business.\n\n\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (The Zalando/The Iconic of South East Asia), JD.com (the Amazon of China), and a few smaller organizations. You can find my Linkedin profile {https://www.linkedin.com/in/lbarbe/}.\n\n\nI bring strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to SMB Sales (Outreach Automation & Inbound), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies. I apply AI to most Go to Market channels, utilizing tools such as Clay to create customized messaging to reach the target audience. \n\n\nI’ve managed to grow revenue by 2x / 3x at every business I’ve worked with. If you think my background could help, would you mind if I shared my CV?\n\n\nThanks!\n\n\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\ne-Commerce\n\nDear  {{ $('Get row(s) in sheet').item.json.founders }},\n\n\nI saw you are running an eCommerce company, and I wanted to reach out to see if I can help grow your business.\n\n\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (The Zalando/The Iconic of South East Asia), JD.com (the Amazon of China), and a few smaller organizations. You can find my Linkedin profile {https://www.linkedin.com/in/lbarbe/}.\n\n\nI bring strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to SMB Sales (Outreach Automation), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies.\n\n\nI’ve managed to grow revenue by 2x / 3x at every business I’ve worked with. If you think my background could help, would you mind if I shared my CV?\n\n\nThanks!\n\n\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDTC\nDear {{ $('Get row(s) in sheet').item.json.founders }},\nI saw that you are running a company in the DTC space, a strong personal passion of mine, and I wanted to reach out to see if I can help grow your business, as I am currently looking for a new role.\nMy name is Luca, and I am a former executive at companies such as Google, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China, where I was leading the DTC business unit, launching two DTC brands from scratch and growing them to a 5M USD run rate in just 16 months), and a few smaller organizations, always in the DTC space. You can find my LinkedIn profile.\nI bring strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to product sourcing, from Influencer Marketing to CRM, from Referral to Loyalty programs, on top of SEO, Dynamic Pricing, Omnichannel, Affiliates, Partnerships, and conversion rate optimization. I am familiar with Shopify and WooCommerce as well.\nI’ve managed to grow revenue by 2x to 3x at every business I’ve worked with.\nIf you think my background could help, would you mind if I shared my CV with you?\nThanks!\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/\n\n\n\n\n\n\n\n\n\n\nSocial Commerce\nDear  {{ $('Get row(s) in sheet').item.json.founders }},\nI saw that you are running a company in the social commerce space, a strong personal passion of mine, and I wanted to reach out to see if I can help grow your business, as I am currently looking for a new role.\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China), and a few smaller organizations. Most recently, I used to run the Social Commerce business unit of JD.com, taking care of live streaming, group buying, affiliates, and TikTok Shop. You can find my LinkedIn profile.\nI bring strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to SMB Sales (Outreach Automation), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies.\nI am particularly passionate about social commerce, and I’ve managed to grow revenue by 2x to 3x at every business I’ve worked with. \nIf you think my background could help, would you mind if I shared my CV with you?\nThanks!\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/\n\n\n\n\n\n\n\n\n\n\n\n\nAd Tech\nDear  {{ $('Get row(s) in sheet').item.json.founders }},\nI saw that you are running a company in the Ad Tech/Mar Tech space, a strong personal passion of mine, and I wanted to reach out to see if I can help grow your business, as I am currently looking for a new role.\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China), and a few smaller organizations. I have a personal passion for AdTech, and I used to run a large publisher business based on an arbitrage technology I built to generate publishing revenue out of large volumes of paid traffic. You can find my LinkedIn profile.\nI bring strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads, all via API) to SMB Sales (Outreach Automation), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies.\nI am particularly passionate about growing the demand and supply sides of platforms and marketplaces, opening new demand channels, finding gaps on the supply side, and ensuring the two sides of the platform match successfully.\nI’ve managed to grow revenue by 2x to 3x at every business I’ve worked with. \nIf you think my background could help, would you mind if I shared my CV with you?\nThanks!\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/\n\n\n\n\n\n\n\n\n\nWeb3\nDear  {{ $('Get row(s) in sheet').item.json.founders }},\nI saw that you are running a company in the Web3 space, a strong personal passion of mine, and I wanted to reach out to see if I can help grow your business, as I am actively looking for a new role.\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China), and a few smaller organizations.\nI have recently been working in the Web3 space, a personal passion of mine as well, first for Pine, an NFT-backed loans protocol, then for a major European CEX, Blocktrade, and most recently TonCash, a cash-back app built for the TON ecosystem. You can find my LinkedIn profile.\nI bring strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to SMB Sales (Outreach Automation), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies, in both Web2 and Web3.\nI’ve managed to grow revenue by 2x to 3x at every business I’ve worked with. \nIf you think my background could help, would you mind if I shared my CV with you?\nThanks!\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/ \n\n\n\n\n\n\n\n\n\n\nGig Economy\nDear  {{ $('Get row(s) in sheet').item.json.founders }},\nI saw that you are running a company in the gig economy space, a strong personal passion of mine, and I wanted to reach out to see if I can help grow your business, as I am actively looking for a new role.\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China), and a few smaller organizations, always in the marketplace space. You can find my LinkedIn profile.\nI am particularly passionate about the gig economy. I have personally intermediated almost 500K USD on Upwork over the last ten years, I built a casual workers’ marketplace app in the past, and I would love to get a new role in this space.\nI bring strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to SMB Sales (Outreach Automation), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies.\nI’ve managed to grow revenue by 2x to 3x at every business I’ve worked with. \nIf you think my background could help, would you mind if I shared my CV with you?\nThanks!\nLuca Barberis\nLinkedIn:https://www.linkedin.com/in/lbarbe/ \n\n\n\n\n\n\n\n\n\n\nFashion\nDear  {{ $('Get row(s) in sheet').item.json.founders }},\nI saw that you are running a company in the fashion space, a strong personal and professional passion of mine, and I wanted to reach out to see if I can help grow your business, as I am actively looking for a new role.\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China, where I was leading the Fashion category in Indonesia), and a few smaller organizations, always in the marketplace space. You can find my LinkedIn profile.\nI bring strong experience in the fashion category, as I have been managing P&Ls of up to 200M USD per year in fashion-related revenue. I also built strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to SMB Sales (Outreach Automation), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies.\nI’ve managed to grow revenue by 2x to 3x at every business I’ve worked with.\nIf you think my background could help, would you mind if I shared my CV with you?\nThanks!\nLuca Barberis\nLinkedIn:https://www.linkedin.com/in/lbarbe/\n\n\n\n\n\n\n\n\n\n\n\nBeauty\nDear {{ $('Get row(s) in sheet').item.json.founders }},\nI saw that you are running a company in the beauty space, a strong personal and professional passion of mine, and I wanted to reach out to see if I can help grow your business, as I am actively looking for a new role.\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China, where I was leading the Fashion and Beauty category in Indonesia), and a few smaller organizations, always in the marketplace space. You can find my LinkedIn profile.\nI bring strong experience in the beauty category, as I have been managing P&Ls of up to 200M USD per year in beauty-related revenue. I also built strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to SMB Sales (Outreach Automation), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies.\nI’ve managed to grow revenue by 2x to 3x at every business I’ve worked with. \nIf you think my background could help, would you mind if I shared my CV with you?\nThanks!\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/\n\n\n\n\n\n\n\n\n\n\n\n\nSport\nDear  {{ $('Get row(s) in sheet').item.json.founders }},\nI saw that you are running a company in the sports space, a strong personal and professional passion of mine, and I wanted to reach out to see if I can help grow your business, as I am actively looking for a new role.\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China, where I was leading the Sports category in Indonesia), and a few smaller organizations, always in the marketplace space. You can find my LinkedIn profile.\nI bring strong experience in the sports category, as I have been managing P&Ls of up to 200M USD per year in sports-related revenue, and I launched a sports DTC brand under the JD.com umbrella in the yoga space, which reached a run rate of 1M USD in less than 12 months. I also built strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to SMB Sales (Outreach Automation), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies.\nI’ve managed to grow revenue by 2x to 3x at every business I’ve worked with.\nIf you think my background could help, would you mind if I shared my CV with you?\nThanks!\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/\n\n\n\n\n\n\n\n\n\n\n\nF&B\nDear  {{ $('Get row(s) in sheet').item.json.founders }},\nI saw that you are running a company in the F&B space, a strong personal and professional passion of mine, and I wanted to reach out to see if I can help grow your business, as I am actively looking for a new role.\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China), and a few smaller organizations. You can find my LinkedIn profile.\nI bring strong experience in the F&B category, as I managed Eatigo, a TripAdvisor company, a Groupon for restaurants where I was responsible for a few countries and a P&L of around 20M USD per year.\nI also built strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to SMB Sales (Outreach Automation), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies.\nI’ve managed to grow revenue by 2x to 3x at every business I’ve worked with. \nIf you think my background could help, would you mind if I shared my CV with you?\nThanks!\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/\n\n\n\n\n\n\n\n\n\n\n\nRetail\nDear  {{ $('Get row(s) in sheet').item.json.founders }},\nI saw that you are running a company in the retail space, a strong personal and professional passion of mine, and I wanted to reach out to see if I can help grow your business, as I am actively looking for a new role.\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China), and a few smaller organizations, always on the digital side of the retail space. You can find my LinkedIn profile.\nI bring strong experience in the online retail category, as I have been managing P&Ls of up to 200M USD per year across multiple merchandising categories. I also built three DTC brands under the umbrella of JD.com, reaching a run rate of five million USD in just 12 months, across FMCG, furniture, and sports.\nI also built strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to SMB Sales (Outreach Automation), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies.\nI’ve managed to grow revenue by 2x to 3x at every business I’ve worked with. \nIf you think my background could help, would you mind if I shared my CV with you?\nThanks!\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/ \n\n\n\n\n\n\n\n\n\n\nTravel\nDear  {{ $('Get row(s) in sheet').item.json.founders }},\nI saw that you are running a company in the travel space, a strong personal and professional passion of mine, and I wanted to reach out to see if I can help grow your business, as I am actively looking for a new role.\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (the Zalando/The Iconic of Southeast Asia), JD.com (the Amazon of China), and a few smaller organizations. You can find my LinkedIn profile.\nI bring strong experience in the travel category, as I managed Eatigo, a TripAdvisor company, a Groupon for lifestyle businesses where I was Country Manager for a few countries and had a P&L of around 20M USD per year.\nI also built strong experience across all growth channels, from Performance Advertising (Google Ads, Meta Ads, TikTok Ads) to SMB Sales (Outreach Automation), from Enterprise Sales to Consumer Marketing, Influencer Marketing to Affiliates, CRM, and Partnerships, covering both B2B and B2C strategies.\nI’ve managed to grow revenue by 2x to 3x at every business I’ve worked with. \nIf you think my background could help, would you mind if I shared my CV with you?\nThanks!\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/ \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nGENERIC B2C\n\nDear  {{ $('Get row(s) in sheet').item.json.founders }},\n\n\nI saw that you are running a consumer business, and I wanted to reach out to see if you’re looking for talent to help grow your company, as I am actively seeking a new role.\n\n\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (The Zalando/The Iconic of South East Asia), JD.com (the Amazon of China), and a few smaller organizations. You can find my Linkedin profile.\n\n\nI bring extensive experience in B2C marketing—covering Performance Advertising (Google Ads, Meta Ads, TikTok Ads), Influencer Marketing, Affiliates, CRM, and Consumer Partnerships.\n\n\nI’ve managed to grow revenue by 2x / 3x at every business I’ve worked with. If you think my background could help, would you mind if I shared my CV?\n\n\nThanks!\n\n\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/ \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nGENERIC B2B\n\nHi {{ $('Get row(s) in sheet').item.json.founders }},\n\n\nI saw that you run a B2B business and I wanted to reach out to see if you’re looking for talent to help grow your company, as I am actively seeking a new role.\n\n\nI'm Luca, with a track record of executive roles at Google, TripAdvisor, Zalora, JD.com, and more. I always managed to grow their businesses by 2x or 3x through B2B efforts, by building an effective inbound and outbound sales engine.\n\n\nHere are my key skills that could benefit your organization:\n\n\n 1.Lead Generation: Build a precise customer database and automate outreach, ensuring a steady stream of sales meetings.\n 2.Sales Incentives: Designing programs to drive sales team performance.\n 3.Team Building: Recruit, onboard, and nurture a high-performing sales team.\n 4.Effective Pitching: Craft pitches that resonate, present compelling offers, and close deals efficiently.\n 5.Inbound Marketing: Boost inbound leads with strategic content creation, SEO, and media outreach.\n 6.Skill Enhancement: Provide ongoing training to sharpen sales skills and improve performance.\nIf you think my background could help, would you mind if I shared my CV?\n\n\nLooking forward to your response.\n\n\nBest regards,\n\n\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nGENERIC\n\nDear {{ $('Get row(s) in sheet').item.json.founders }},\n\n\nI found your company as a fast growing organization on Crunchbase and I wanted to reach out to see if you're looking for talent to help grow your company.\n\n\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (The Zalando/TheIconic of South East Asia), JD.com (the Amazon of China) and a few smaller organizations as well. I have a strong experience with all growth channels, from B2B Sales to Performance Advertising, from Enterprise Sales to Consumer Marketing, from Influencers marketing to Affiliates.\n\n\nI managed to grow 2x / 3x the revenue of all the businesses I worked with. I have attached my CV as a reference. If this could help, do not hesitate to contact me, as I am actively looking for new opportunities.\n\n\nThanks!\n\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1024,
+        112
+      ],
+      "id": "e1806197-154e-46e8-b6a7-e19095887fd2",
+      "name": "AI Agent2",
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1GZdNNujwrln0imBgjIhaALn6C2xw8-UC7XTHFle95c4",
+          "mode": "list",
+          "cachedResultName": "Crunchbase 1-129243",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GZdNNujwrln0imBgjIhaALn6C2xw8-UC7XTHFle95c4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1434657209,
+          "mode": "list",
+          "cachedResultName": "1-15k",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GZdNNujwrln0imBgjIhaALn6C2xw8-UC7XTHFle95c4/edit#gid=1434657209"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Email",
+              "lookupValue": "="
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1504,
+        -272
+      ],
+      "id": "2a55fc88-37a0-497f-b176-8304ff9edc93",
+      "name": "Get row(s) in sheet",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9q6yuzUP8IcrdWD1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e641230c-19f6-4921-8774-18727c84b77c",
+              "leftValue": "={{ $json.error.name }}",
+              "rightValue": "Error",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -896,
+        -272
+      ],
+      "id": "59509301-8de8-4c18-a79c-433f583f5bfa",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1GZdNNujwrln0imBgjIhaALn6C2xw8-UC7XTHFle95c4",
+          "mode": "list",
+          "cachedResultName": "Crunchbase 1-129243",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GZdNNujwrln0imBgjIhaALn6C2xw8-UC7XTHFle95c4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1434657209,
+          "mode": "list",
+          "cachedResultName": "1-15k",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GZdNNujwrln0imBgjIhaALn6C2xw8-UC7XTHFle95c4/edit#gid=1434657209"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "website": "={{ $('Get row(s) in sheet').item.json.website }}",
+            "Compaign": "={{ $('AI Agent1').item.json.output }}",
+            "Email": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "website"
+          ],
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "founders",
+              "displayName": "founders",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "linkedin",
+              "displayName": "linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "website",
+              "displayName": "website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone_number",
+              "displayName": "phone_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact_email",
+              "displayName": "contact_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "company_type",
+              "displayName": "company_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_portfolio_organizations",
+              "displayName": "num_portfolio_organizations",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_investments_funding_rounds",
+              "displayName": "num_investments_funding_rounds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_lead_investments",
+              "displayName": "num_lead_investments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_investors",
+              "displayName": "num_investors",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_lead_investors",
+              "displayName": "num_lead_investors",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_funding_rounds",
+              "displayName": "num_funding_rounds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_articles",
+              "displayName": "num_articles",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rank_org_company",
+              "displayName": "rank_org_company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_funding_at",
+              "displayName": "last_funding_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "equity_funding_total",
+              "displayName": "equity_funding_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "funding_total",
+              "displayName": "funding_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_equity_funding_total",
+              "displayName": "last_equity_funding_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_funding_total",
+              "displayName": "last_funding_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location_group_identifiers",
+              "displayName": "location_group_identifiers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "investor_identifiers",
+              "displayName": "investor_identifiers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location_identifiers",
+              "displayName": "location_identifiers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 1",
+              "displayName": "Category 1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 2",
+              "displayName": "Category 2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 3",
+              "displayName": "Category 3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 4",
+              "displayName": "Category 4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 5",
+              "displayName": "Category 5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 6",
+              "displayName": "Category 6",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 7",
+              "displayName": "Category 7",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 8",
+              "displayName": "Category 8",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 9",
+              "displayName": "Category 9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 10",
+              "displayName": "Category 10",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 11",
+              "displayName": "Category 11",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 12",
+              "displayName": "Category 12",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 13",
+              "displayName": "Category 13",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 14",
+              "displayName": "Category 14",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 15",
+              "displayName": "Category 15",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 16",
+              "displayName": "Category 16",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 17",
+              "displayName": "Category 17",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 18",
+              "displayName": "Category 18",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 19",
+              "displayName": "Category 19",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 20",
+              "displayName": "Category 20",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 21",
+              "displayName": "Category 21",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 22",
+              "displayName": "Category 22",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 23",
+              "displayName": "Category 23",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 24",
+              "displayName": "Category 24",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 25",
+              "displayName": "Category 25",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Compaign",
+              "displayName": "Compaign",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -608,
+        96
+      ],
+      "id": "f3f2b9bf-3b12-48f0-917a-70d5ce6b6f84",
+      "name": "Update row in sheet",
+      "retryOnFail": false,
+      "notesInFlow": false,
+      "maxTries": 2,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9q6yuzUP8IcrdWD1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1GZdNNujwrln0imBgjIhaALn6C2xw8-UC7XTHFle95c4",
+          "mode": "list",
+          "cachedResultName": "Crunchbase 1-129243",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GZdNNujwrln0imBgjIhaALn6C2xw8-UC7XTHFle95c4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1434657209,
+          "mode": "list",
+          "cachedResultName": "1-15k",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GZdNNujwrln0imBgjIhaALn6C2xw8-UC7XTHFle95c4/edit#gid=1434657209"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "contact_email": "={{ $('Get row(s) in sheet').item.json.contact_email }}",
+            "Compaign": "Couldn't identified campaign",
+            "Email": "=Dear {{ $('Get row(s) in sheet').item.json.founders }},\n\n\nI found your company as a fast growing organization on Crunchbase and I wanted to reach out to see if you're looking for talent to help grow your company.\n\n\nMy name is Luca, and I am a former executive at companies such as Google, TripAdvisor, Zalora (The Zalando/TheIconic of South East Asia), JD.com (the Amazon of China) and a few smaller organizations as well. I have a strong experience with all growth channels, from B2B Sales to Performance Advertising, from Enterprise Sales to Consumer Marketing, from Influencers marketing to Affiliates.\n\n\nI managed to grow 2x / 3x the revenue of all the businesses I worked with. I have attached my CV as a reference. If this could help, do not hesitate to contact me, as I am actively looking for new opportunities.\n\n\nThanks!\n\nLuca Barberis\nLinkedIn: https://www.linkedin.com/in/lbarbe/"
+          },
+          "matchingColumns": [
+            "contact_email"
+          ],
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "founders",
+              "displayName": "founders",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "linkedin",
+              "displayName": "linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "website",
+              "displayName": "website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone_number",
+              "displayName": "phone_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact_email",
+              "displayName": "contact_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company_type",
+              "displayName": "company_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_portfolio_organizations",
+              "displayName": "num_portfolio_organizations",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_investments_funding_rounds",
+              "displayName": "num_investments_funding_rounds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_lead_investments",
+              "displayName": "num_lead_investments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_investors",
+              "displayName": "num_investors",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_lead_investors",
+              "displayName": "num_lead_investors",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_funding_rounds",
+              "displayName": "num_funding_rounds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "num_articles",
+              "displayName": "num_articles",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rank_org_company",
+              "displayName": "rank_org_company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_funding_at",
+              "displayName": "last_funding_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "equity_funding_total",
+              "displayName": "equity_funding_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "funding_total",
+              "displayName": "funding_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_equity_funding_total",
+              "displayName": "last_equity_funding_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_funding_total",
+              "displayName": "last_funding_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location_group_identifiers",
+              "displayName": "location_group_identifiers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "investor_identifiers",
+              "displayName": "investor_identifiers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location_identifiers",
+              "displayName": "location_identifiers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 1",
+              "displayName": "Category 1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 2",
+              "displayName": "Category 2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 3",
+              "displayName": "Category 3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 4",
+              "displayName": "Category 4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 5",
+              "displayName": "Category 5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 6",
+              "displayName": "Category 6",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 7",
+              "displayName": "Category 7",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 8",
+              "displayName": "Category 8",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 9",
+              "displayName": "Category 9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 10",
+              "displayName": "Category 10",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 11",
+              "displayName": "Category 11",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 12",
+              "displayName": "Category 12",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 13",
+              "displayName": "Category 13",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 14",
+              "displayName": "Category 14",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 15",
+              "displayName": "Category 15",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 16",
+              "displayName": "Category 16",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 17",
+              "displayName": "Category 17",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 18",
+              "displayName": "Category 18",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 19",
+              "displayName": "Category 19",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 20",
+              "displayName": "Category 20",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 21",
+              "displayName": "Category 21",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 22",
+              "displayName": "Category 22",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 23",
+              "displayName": "Category 23",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 24",
+              "displayName": "Category 24",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category 25",
+              "displayName": "Category 25",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Compaign",
+              "displayName": "Compaign",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -576,
+        -288
+      ],
+      "id": "737eb5b6-6823-4059-a78c-0c1d8458913d",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9q6yuzUP8IcrdWD1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Trigger \n",
+        "height": 192,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1872,
+        -336
+      ],
+      "id": "dcd157f0-cb6b-4135-a59f-9a972d4c1945",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Get Data From Sheet \n",
+        "height": 192,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1568,
+        -336
+      ],
+      "id": "50b0db9c-264b-48d6-9d21-198f1dc8643f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Analyze the Website\n",
+        "height": 192,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1248,
+        -336
+      ],
+      "id": "a5f80e39-194c-412e-bc1d-b65e75e1bbc9",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Condition\n### if analyze sussessfull to go false if not analyze go to true \n",
+        "height": 192,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        -336
+      ],
+      "id": "913d283d-751c-4e76-a8ee-307e467bffb6",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Update the Sheet\n",
+        "height": 192,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        -336
+      ],
+      "id": "d3d00ad2-97ef-4ab1-8a87-6fb4a1f04f6d",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Update the Sheet\n",
+        "height": 208,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        32
+      ],
+      "id": "1bd306b4-2674-4a04-8c9e-968c80d80e58",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Email Assign\n",
+        "height": 208,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1056,
+        32
+      ],
+      "id": "dc05f31b-5b47-4ca0-964b-3101d43b78b7",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Company Insight Extractor\n",
+        "height": 224,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1888,
+        32
+      ],
+      "id": "122eb97e-1597-473c-94aa-65ee1bbd3070",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Update the Sheet\n",
+        "height": 224,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1472,
+        32
+      ],
+      "id": "67e83ee9-563c-4393-a985-30a94826c758",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "height": 832,
+        "width": 1792,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2048,
+        -416
+      ],
+      "id": "717691b9-2f41-4a83-9436-20569a668841",
+      "name": "Sticky Note9"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f9424259-7fae-436b-839b-0b4a60c518b0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "36b7f98dd4cbc49a35cc165a0556d34b1490d34f966d01d8f5b6f62e8a7a2879"
+  },
+  "id": "BGtIm3K7TwIF5B08",
+  "tags": []
+}

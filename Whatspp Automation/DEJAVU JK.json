@@ -1,0 +1,4920 @@
+{
+  "name": "DEJAVU JK",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.fields.status }}",
+                    "rightValue": "NEW",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3769b48c-b87b-412f-b096-cf42ff68d527"
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "NEW"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.fields.status }}",
+                    "rightValue": "RETURNING",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9c1b3893-e9ec-4c1d-920f-d11b09c20b25"
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "RETURNING"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.fields.status }}",
+                    "rightValue": "QUALIFYING",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6637a705-34e8-4f24-a764-89e5cac84f2b"
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "QUALIFYING"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.fields.status }}",
+                    "rightValue": "SELECTING",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5aea5d65-81ef-427d-a592-c64532742808"
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "SELECTING"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e88f540e-a097-4dc7-8d43-662852a055a4",
+      "name": "Route by State",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -3328,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "id": "21d5139d-14a2-405f-b7da-4c05e14fa4b4",
+      "name": "Greeting Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -3008,
+        800
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "cntSdCF59GfKsFwh",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('WhatsApp Trigger1').first().json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=You are Luna, a friendly travel assistant for DejaVu Tours, specializing in Bali travel packages.\n\nYour task:\n1. Greet the customer warmly in their detected language\n2. Introduce yourself briefly\n3. Ask for their name to begin the qualification process\n\nKeep your response short and friendly. Ask only one question at a time.\n\nIf the customer's message is in a specific language, always reply in that same language."
+        }
+      },
+      "id": "eb77279c-1c79-4a25-82db-a433e3511130",
+      "name": "Greeting Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2992,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "72c3b2a7-95bd-4dc9-8624-78734dfd5018",
+      "name": "Qualification Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -4192,
+        1120
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "cntSdCF59GfKsFwh",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('WhatsApp Trigger1').first().json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=You are Luna, a travel assistant for DejaVu Tours. You are currently qualifying a customer.\n\n\n\nQualification Steps:\n1. Name (if not provided): Ask for their full name\n2. Country (if not provided): Ask which country they're from\n3. Travel Dates (if not provided): Ask for specific travel dates (start and end date),\nreturn the (start and end date in latter summary)\nsometimes you will need to calculate.\nTo day date: {{ $now.format('yyyy-MM-dd') }}\n4. Package Type: Ask if they prefer Family or Couple package\n6. IF FAMILY: Ask group size\n- IF > 10: Inform them a specialist will contact them. End conversation.\n- IF ≤ 10: Continue to Step 3\n  IF COUPLE: Skip \n\nIMPORTANT:\n- Ask ONE question at a time\n- Validate the response before moving to next step\n- If customer provides multiple pieces of information, acknowledge all\n- Store information in context as you receive it\n- Be conversational and friendly\n\nOnce you have all information, respond with: \"QUALIFICATION_COMPLETE: [summary]\"\nif the QUALIFICATION_COMPLETE only return this not return more thing like summarize etc ."
+        }
+      },
+      "id": "7e97ee95-b8c0-435d-8d45-751726a38a06",
+      "name": "Qualification Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -4176,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this to search for tour packages based on type and duration",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "={{ $fromAI('Table', `Based on the input it select table.`, 'string') }}",
+          "mode": "id"
+        },
+        "filterByFormula": "=",
+        "options": {}
+      },
+      "id": "cd1b8bab-58ed-4107-9552-401d484d7d81",
+      "name": "Search Packages Tool",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        -4192,
+        1696
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "id": "8c765c79-e0b3-498c-a19e-bbc824380067",
+      "name": "Package Selection Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -4192,
+        1536
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "cntSdCF59GfKsFwh",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_input }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Luna (Travel Assistant for DejaVu Tours)\n\nYou are Luna, a friendly and helpful travel assistant for DejaVu Tours, specializing in Bali travel packages.\n\n🎯 Logic & Workflow\n\nIf {QUALIFICATION_COMPLETE} is true:\n\n1. Table Selection\n\nUse the table: \"Couple_packages\" or \"Family Packages\"\n\nSearch by: Days\n\n2. Generate Package Link\n\nFamily: https://dejavubali.com/FM-[DAYS]D[NIGHTS]N\n\nCouple: https://dejavubali.com/HM-[DAYS]D[NIGHTS]N\n\nFormula: Nights = Days - 1\n\nExample:\n8 Days → FM-8D7N (Family) or HM-8D7N (Couple)\n\n3. Access & Update Package Link\n\nUse the \"Search Packages Tool\" to find the correct package link.\n\nUpdate the tool {Update record in Airtable} and set the field \"Selected Package Name\" with the generated link.\n\nExample:\n\nhttps://dejavubali.com/FM-[DAYS]D[NIGHTS]N\nhttps://dejavubali.com/HM-[DAYS]D[NIGHTS]N\n\n4. Ask the User\n\nAfter sharing the package link, ask:\n\n“Would you like to know more details about this package or schedule a call with another QA Team mate?”\n\n💬 If the User Asks for Package Details\n\nIf the user wants more details about the package:\n\nCall the tool “Get number of questions.”\n\nAccess the field “no of questions.”\n\nIf no of questions < 10, use the Pinecone Vector Store to search and retrieve accurate package details.\n\nIf no of questions ≥ 10, do not search the Pinecone Vector Store.\n\nInstead, respond with:\n\n“You have reached the limit for detailed package questions.”\n\nAfter answering, update the tool {Update record in Airtable} to increase the “no of questions” count each time the user asks a new question.\n\n📜 Core Rules\n\nAlways respond in the customer’s language.\n\nKeep the tone warm, friendly, and conversational.\n\nAsk only one question at a time.\n\nKeep all responses brief, clear, and natural.\n\nalways use the structured output parser.\n{\n\t\"Normal reply\": \"here will be Normal reply to the user question\",\n\t\"quota reached\": \"number of QA answered\",\n    \"Schedule Call\":\"here will be call Schedule status, yes or no\"\n}"
+        }
+      },
+      "id": "e1b986bc-e58d-4da8-b052-2df72f201a38",
+      "name": "Package Selection Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -3776,
+        1392
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "QUALIFICATION_COMPLETE",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "id": "d55704bb-4d22-4073-99a4-ce03dbf7c2ea"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b2e63407-6d3a-4df5-b723-6ed782902dd3",
+      "name": "Qualification Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -3872,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').first().json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "Thank you for your interest in our group packages! Since your group is larger than 10 people, one of our specialized travel consultants will contact you shortly to create a customized package that perfectly fits your needs. We'll be in touch within the next 24 hours. 🌴",
+        "additionalFields": {}
+      },
+      "id": "3c8840e7-e4f8-4b17-a232-d903d8b6a62a",
+      "name": "Send VIP Message",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -2656,
+        1088
+      ],
+      "webhookId": "0b64b547-0b65-4498-99fc-cff66be8d524",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "wa_id": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+            "status": "NEW"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "wa_id",
+              "displayName": "wa_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "group size",
+              "displayName": "group size",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "travel dates",
+              "displayName": "travel dates",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Package Type",
+              "displayName": "Package Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Family",
+                  "value": "Family"
+                },
+                {
+                  "name": "Couple",
+                  "value": "Couple"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Selected Package Name",
+              "displayName": "Selected Package Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "no of questions",
+              "displayName": "no of questions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "NEW",
+                  "value": "NEW"
+                },
+                {
+                  "name": "RETURNING",
+                  "value": "RETURNING"
+                },
+                {
+                  "name": "QUALIFYING",
+                  "value": "QUALIFYING"
+                },
+                {
+                  "name": "SELECTING",
+                  "value": "SELECTING"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a55f36bd-ad0f-4690-b792-7458cd0c94da",
+      "name": "Create New User State",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3808,
+        656
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "id": "b5afe847-3f5f-4fc3-8f2a-f2b84b78d263",
+      "name": "WhatsApp Trigger1",
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4176,
+        400
+      ],
+      "webhookId": "116647d1-c1d0-4e84-8977-df7ffed90ab6",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "y6K1dlVGnNRaz3SL",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "filterByFormula": "={wa_id} ={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -4176,
+        640
+      ],
+      "id": "7c03f078-863a-48ac-a31d-12f692622199",
+      "name": "Search User Records",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblCLMtmhKQeH8w4f",
+          "mode": "list",
+          "cachedResultName": "rate_limiting",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblCLMtmhKQeH8w4f"
+        },
+        "filterByFormula": "=AND(\n  {wa_id} = '{{ $('WhatsApp Trigger1').item.json.contacts[0].wa_id }}',\n  DATETIME_DIFF(NOW(), {Created time}, 'minutes') <= 5\n)",
+        "options": {}
+      },
+      "id": "a4e6a72d-4ba4-414a-83cc-62b4d33eabdc",
+      "name": "Check Rate Limit",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3328,
+        400
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger1').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger1').item.json.contacts[0].wa_id }}",
+        "textBody": "⚠️ Your account has been temporarily restricted due to {{ $json.reason }}. This is a safety measure. If you believe this is an error, please contact our support team directly.",
+        "additionalFields": {}
+      },
+      "id": "37239b90-f056-47ee-aceb-8bcc81f5f030",
+      "name": "Send Spam Warning1",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -2496,
+        384
+      ],
+      "webhookId": "9958de2f-6268-4a90-9d38-722703104f4c",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c855d5ad-64c9-498a-a80b-82b3a84938d3",
+              "name": "fields.status",
+              "value": "={{ $json.fields.status }}{{ $json.status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3600,
+        624
+      ],
+      "id": "33c39f9d-df81-4f1d-a040-d56cf7ab0bcb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "wa_id": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+            "status": "QUALIFYING"
+          },
+          "matchingColumns": [
+            "wa_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "wa_id",
+              "displayName": "wa_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "group size",
+              "displayName": "group size",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "travel dates",
+              "displayName": "travel dates",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Package Type",
+              "displayName": "Package Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Family",
+                  "value": "Family"
+                },
+                {
+                  "name": "Couple",
+                  "value": "Couple"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Selected Package Name",
+              "displayName": "Selected Package Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "no of questions",
+              "displayName": "no of questions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "NEW",
+                  "value": "NEW"
+                },
+                {
+                  "name": "RETURNING",
+                  "value": "RETURNING"
+                },
+                {
+                  "name": "QUALIFYING",
+                  "value": "QUALIFYING"
+                },
+                {
+                  "name": "SELECTING",
+                  "value": "SELECTING"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2656,
+        656
+      ],
+      "id": "d1fce819-66ea-4a9e-b867-0066b69155bd",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Give answer to the question from this knowledge base .",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "dejavu",
+          "mode": "list",
+          "cachedResultName": "dejavu"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -3680,
+        1584
+      ],
+      "id": "7890cceb-6039-4946-a2e7-72692c56f413",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "13Jd7EVfjjl0Wjbi",
+          "name": "MindShift PineCone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 512
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -3680,
+        1728
+      ],
+      "id": "89de6db3-d323-49d5-a10c-dddd49b36b0d",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "Ffo6HqGpSX8PJ9pt",
+          "name": "MindShift OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let qualificationOutput = null;\nlet whatsappOutput = null;\n\n// Try to get Qualification Agent data safely\ntry {\n  qualificationOutput = $('Qualification Agent').first().json.output || null;\n} catch (e) {}\n\n// Try to get WhatsApp Trigger data safely\ntry {\n  whatsappOutput = $('WhatsApp Trigger1').first().json.messages[0].text.body || null;\n} catch (e) {}\n\n// Decide which one to pass\nlet finalInput = qualificationOutput ? qualificationOutput : whatsappOutput;\n\nreturn [{\n  user_input: finalInput\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4176,
+        1392
+      ],
+      "id": "177fa773-db27-47da-b53f-4b253800404b",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "wa_id": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+            "Full Name": "={{ $json.output.full_name }}",
+            "Package Type": "={{ $json.output.package_type }}",
+            "travel dates": "={{ $json.output.travel_date }}",
+            "country": "={{ $json.output.country }}",
+            "status": "SELECTING",
+            "group size": "={{ $json.output.group_size }}"
+          },
+          "matchingColumns": [
+            "wa_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "wa_id",
+              "displayName": "wa_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "group size",
+              "displayName": "group size",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "travel dates",
+              "displayName": "travel dates",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Package Type",
+              "displayName": "Package Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Family",
+                  "value": "Family"
+                },
+                {
+                  "name": "Couple",
+                  "value": "Couple"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Selected Package Name",
+              "displayName": "Selected Package Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "no of questions",
+              "displayName": "no of questions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "NEW",
+                  "value": "NEW"
+                },
+                {
+                  "name": "RETURNING",
+                  "value": "RETURNING"
+                },
+                {
+                  "name": "QUALIFYING",
+                  "value": "QUALIFYING"
+                },
+                {
+                  "name": "SELECTING",
+                  "value": "SELECTING"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3312,
+        1136
+      ],
+      "id": "d2d61b42-5b1f-46d7-813b-b3f96e4f5f54",
+      "name": "Update record2",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "wa_id": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+            "no of questions": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('no_of_questions', `here will be no_of_question.`, 'number') }}",
+            "status": "SELECTING",
+            "Selected Package Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Selected_Package_Name', `fill this filled based on the agent are give the package link , example :https://dejavubali.com/FM-[DAYS]D[NIGHTS]N\n- Couple: https://dejavubali.com/HM-[DAYS]D[NIGHTS]N`, 'string') }}"
+          },
+          "matchingColumns": [
+            "wa_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "wa_id",
+              "displayName": "wa_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "group size",
+              "displayName": "group size",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "travel dates",
+              "displayName": "travel dates",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Package Type",
+              "displayName": "Package Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Family",
+                  "value": "Family"
+                },
+                {
+                  "name": "Couple",
+                  "value": "Couple"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Selected Package Name",
+              "displayName": "Selected Package Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "no of questions",
+              "displayName": "no of questions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "NEW",
+                  "value": "NEW"
+                },
+                {
+                  "name": "RETURNING",
+                  "value": "RETURNING"
+                },
+                {
+                  "name": "QUALIFYING",
+                  "value": "QUALIFYING"
+                },
+                {
+                  "name": "SELECTING",
+                  "value": "SELECTING"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        -4048,
+        1696
+      ],
+      "id": "b0f5ec31-db7f-42ba-b9da-a09b4b132650",
+      "name": "Update record in Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "filterByFormula": "={wa_id} = '{{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}'",
+        "options": {
+          "fields": [
+            "no of questions"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        -3888,
+        1696
+      ],
+      "id": "8d348b9d-ecda-4804-8606-d45da4547f04",
+      "name": "Get number of question",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $now.hour >= 9 && $now.hour <= 18 }}",
+              "value2": true
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "5366996e-6bb2-4280-ad30-d19c448e5005",
+      "name": "Within Business Hours 9-6?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -3984,
+        2304
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "action",
+              "value": "send_calendar_link"
+            },
+            {
+              "name": "message",
+              "value": "We're currently outside business hours (9 AM - 6 PM). Please schedule a call at your convenience using this link: https://schedule.dejavubali.com/"
+            },
+            {
+              "name": "callType",
+              "value": "scheduled"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "572e0058-d799-48b0-95fb-2b129dbcba6b",
+      "name": "Send CRM Calendar Link",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -3712,
+        2400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "filterByFormula": "={wa_id} = '{{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3712,
+        2240
+      ],
+      "id": "6605c7d4-ee80-4439-b61b-06ad97e5cbb3",
+      "name": "Search records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -3488,
+        2400
+      ],
+      "id": "c435c81f-e03b-44e2-a7a1-3f89279bfacf",
+      "name": "Send message",
+      "webhookId": "7d01fe67-baef-4ed8-b894-ba09ca179a4a",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "=Customer wants to schedule a call during business hours. Offering immediate call option.\n\n",
+        "additionalFields": {}
+      },
+      "id": "20265c21-7025-4c49-b5b6-4d2655e5208a",
+      "name": "Send VIP Message1",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -3488,
+        2240
+      ],
+      "webhookId": "0b64b547-0b65-4498-99fc-cff66be8d524",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "=Your QA Limit has reached for further questions we will contact you soon.",
+        "additionalFields": {}
+      },
+      "id": "d0da2740-7b66-4460-8296-10bc3b5eb2c6",
+      "name": "Send VIP Message2",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -4000,
+        1968
+      ],
+      "webhookId": "0b64b547-0b65-4498-99fc-cff66be8d524",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "filterByFormula": "={wa_id} = '{{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3056,
+        1088
+      ],
+      "id": "743bd5ea-66e5-4b35-99fd-14ac0c45d14a",
+      "name": "Search records1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### 0. Whatspp Trigger",
+        "height": 224,
+        "width": 224,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4240,
+        336
+      ],
+      "id": "e5b20695-6ed7-42d0-a476-590f09cff7a1",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### 1. Get the User Record and check for Blocked Status",
+        "height": 224,
+        "width": 432,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4000,
+        336
+      ],
+      "id": "c82c5104-ce28-4001-aa57-3c32b5514df0",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "### 2. Store User Msg -> Check Rate Limit -> Spam Analyzer",
+        "height": 224,
+        "width": 736,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3552,
+        336
+      ],
+      "id": "9597ccb8-92f3-4651-90ca-adc6f7dbec36",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "### 3. Spam -> Blocked",
+        "height": 224,
+        "width": 224,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2800,
+        336
+      ],
+      "id": "e52e5438-e8fa-404c-bbce-d0548cdc0ba6",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "### 4. Inform User of Blocked Satus",
+        "height": 224,
+        "width": 256,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2560,
+        336
+      ],
+      "id": "36af751c-e368-4691-a046-9fe1ecb94010",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "### 4. Search Record, Available?",
+        "height": 224,
+        "width": 368,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4240,
+        576
+      ],
+      "id": "a3aed617-b357-4f03-af82-a5e78e1f860b",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "### 5. Create a record for new user ",
+        "height": 224,
+        "width": 416,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3856,
+        576
+      ],
+      "id": "899e17a6-b3e3-4d5d-9aa6-a8dee25f9abb",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "### 6. Router",
+        "height": 224,
+        "width": 368,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3424,
+        576
+      ],
+      "id": "79ebf1bf-cd12-4546-a668-8144bb2482f1",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## 1. Greeting Agent",
+        "height": 368,
+        "width": 320,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3040,
+        576
+      ],
+      "id": "0fe5d691-f83a-4e19-98f8-6d8c761482b1",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## 2. Qualifying Agent",
+        "height": 464,
+        "width": 1952
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4240,
+        816
+      ],
+      "id": "9af2cb3c-257f-4abd-99de-2bc50081367b",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "## 3. Package Selection Agent\n",
+        "height": 1312,
+        "width": 960
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4240,
+        1296
+      ],
+      "id": "3e6cecd2-9e79-4947-bcdb-7f7c88db00e0",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger1').first().json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger1').item.json.contacts[0].wa_id }}",
+        "textBody": "={{ $('Greeting Agent').item.json.output }}",
+        "additionalFields": {}
+      },
+      "id": "31563139-ba7a-43d6-9e14-5beee72844cf",
+      "name": "Send Spam Warning",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -2496,
+        656
+      ],
+      "webhookId": "9958de2f-6268-4a90-9d38-722703104f4c",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger1').first().json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger1').item.json.contacts[0].wa_id }}",
+        "textBody": "={{ $('Greeting Agent').item.json.output }}",
+        "additionalFields": {}
+      },
+      "id": "fcce7de8-235b-44d9-90eb-3db6d2b9b8ef",
+      "name": "Send Spam Warning2",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -3872,
+        1104
+      ],
+      "webhookId": "9958de2f-6268-4a90-9d38-722703104f4c",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=return the below in structured format.\n{{ $json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a helpful assistant use the parser to return the given data in structured format always."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -3664,
+        928
+      ],
+      "id": "ec293a50-c703-4e34-b98f-069c76d6c5c8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"full_name\": \"\",\n  \"country\": \"\",\n  \"travel_date\": \"\",\n  \"package_type\": \"\",\n  \"group_size\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -3520,
+        1120
+      ],
+      "id": "e3752cf1-f9a8-49af-af44-d14aaa178748",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Normal reply\": {\n      \"type\": \"string\",\n      \"description\": \"Normal reply to the user's question\"\n    },\n    \"quota reached\": {\n      \"type\": \"number\",\n      \"description\": \"number of questions user have been asked\"\n    },\n    \"Schedule Call\": {\n      \"type\": \"string\",\n      \"description\": \"yes or no\"\n    }\n  },\n  \"required\": [\n    \"Normal reply\",\n    \"quota reached\",\n    \"Schedule Call\"\n  ],\n  \"additionalProperties\": false\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -3424,
+        1440
+      ],
+      "id": "11eac29a-5ceb-4017-a299-dbf77d0edea4",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d0e47210-219a-445e-9552-1fc86b8b94ad",
+              "leftValue": "={{ $json.output['quota reached'] }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4208,
+        1984
+      ],
+      "id": "d746d1b7-a97a-4b14-ae5f-fd4aeed19048",
+      "name": "quota check"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f4d29161-7575-4322-b8b5-a65ee7b956c3",
+              "leftValue": "={{ $json.output['Schedule Call'] }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4192,
+        2320
+      ],
+      "id": "235bacfe-a619-4f28-b58a-1f6075da2163",
+      "name": "call scheduled?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6a5d66c4-12cf-49c9-bcb6-e11c952612df",
+              "leftValue": "={{ $json.output['Schedule Call'] }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3792,
+        1952
+      ],
+      "id": "7c79fd1c-be42-45f0-abcf-346af922a9cd",
+      "name": "normal vs scheduled replay"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this to search for tour packages based on type and duration",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "={{ $fromAI('Table', `Based on the input it select table.`, 'string') }}",
+          "mode": "id"
+        },
+        "filterByFormula": "=",
+        "options": {}
+      },
+      "id": "bc3ed1c1-91d1-40dc-a93b-9cea9cfbfa82",
+      "name": "Search Packages Tool1",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        -3184,
+        1712
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "id": "86486f88-79f3-4e20-b2e5-974764dcd04f",
+      "name": "Package Selection Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -3184,
+        1568
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "cntSdCF59GfKsFwh",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('WhatsApp Trigger1').first().json.messages[0].text.body }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are Luna, greeting a returning customer.\n\nCustomer Information:\n\nFull Name: {{ $json['Full Name'] }}\n\nCountry: {{ $json.country }}\n\nGroup Size: {{ $json['group size'] }}\n\nTravel Dates: {{ $json['travel dates'] }}\n\nPackage Type: {{ $json['Package Type'] }}\n\nSelected Package: {{ $json['Selected Package Name'] }}\n\nInstructions:\n\nGreet the customer by their name and acknowledge their previous interest in the package.\n\nAsk if they would like to:\n\nProceed with their previous selection: {{ $json['Selected Package Name'] }}\n\nExplore different options\n\nUpdate their information\n\nUse the following tools and instructions to assist the customer:\n\nTable Selection\nUse the tables: \"Couple Packages\" or \"Family Packages\" based on the group size.\n\nSearch by: Days\n\nGenerate Package Link\n\nFor Family Packages:\nhttps://dejavubali.com/FM-[DAYS]D[NIGHTS]N\n\nFor Couple Packages:\nhttps://dejavubali.com/HM-[DAYS]D[NIGHTS]N\n\nFormula for Nights: Nights = Days - 1\n\nExample: For 8 days → FM-8D7N (Family) or HM-8D7N (Couple)\n\nAccess & Update Package Link\n\nUse the \"Search Packages Tool1\" to find the correct package link.\n\nUpdate the \"Update record for Family Package\" for Family Package and \"Update record for Couple Package\" for Couple Package in Airtable with the generated package link.\n\nAsk the User\n\nAfter sharing the package link, ask:\n“Would you like to know more details about this package or schedule a call with another team member?”\n\n💬 If the User Asks for Package Details\n\nCall the “Get number of questions1” tool to access the field \"no of questions.\"\n\nIf the number of questions is less than 10, use the Pinecone Vector Store to search for accurate package details.\n\nIf the number of questions is 10 or more, do not search the Pinecone Vector Store. Instead, reply:\n“You have reached the limit for detailed package questions.”\n\nAfter responding to each question, update Airtable to increase the \"no of questions\" count.\n\nCore Rules:\n\nAlways respond in the customer's language.\n\nKeep the tone warm, friendly, and conversational.\n\nAsk only one question at a time.\n\nKeep responses brief, clear, and natural.\n\nStructured Output:\n\n{\n  \"Normal reply\": \"Your normal reply to the user's question\",\n  \"quota reached\": \"Number of questions answered\",\n  \"Schedule Call\": \"Status of call schedule (yes or no)\"\n}"
+        }
+      },
+      "id": "e23cc0f8-e21b-4337-8c3f-76af653b1dcf",
+      "name": "Package Selection Agent1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2832,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Give answer to the question from this knowledge base .",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "dejavu",
+          "mode": "list",
+          "cachedResultName": "dejavu"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -2656,
+        1600
+      ],
+      "id": "627f6b3a-f1fe-46ac-a9d8-18e70f7392b9",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "13Jd7EVfjjl0Wjbi",
+          "name": "MindShift PineCone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 512
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -2656,
+        1728
+      ],
+      "id": "62818681-f5d4-4df3-a286-dcd50d8f13cd",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "Ffo6HqGpSX8PJ9pt",
+          "name": "MindShift OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "filterByFormula": "={wa_id} = '{{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}'",
+        "options": {
+          "fields": [
+            "no of questions"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        -2768,
+        1712
+      ],
+      "id": "4e5652fb-bcff-40b6-aeba-b5fc2e0b2fd8",
+      "name": "Get number of question1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $now.hour >= 9 && $now.hour <= 18 }}",
+              "value2": true
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "399736a7-23d3-46f5-9554-f056ab8f159b",
+      "name": "Within Business Hours 9-6?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -3008,
+        2432
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "action",
+              "value": "send_calendar_link"
+            },
+            {
+              "name": "message",
+              "value": "We're currently outside business hours (9 AM - 6 PM). Please schedule a call at your convenience using this link: https://schedule.dejavubali.com/"
+            },
+            {
+              "name": "callType",
+              "value": "scheduled"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "66744cf0-333d-42d0-94ee-cbe139b4c9b8",
+      "name": "Send CRM Calendar Link1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -2752,
+        2416
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "filterByFormula": "={wa_id} = '{{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2752,
+        2256
+      ],
+      "id": "9b59e577-3583-4540-a365-61ab15a15b62",
+      "name": "Search records2",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -2528,
+        2416
+      ],
+      "id": "e6d3780a-7107-4301-96a5-3875aaa16948",
+      "name": "Send message1",
+      "webhookId": "7d01fe67-baef-4ed8-b894-ba09ca179a4a",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "=Customer wants to schedule a call during business hours. Offering immediate call option.\n\n",
+        "additionalFields": {}
+      },
+      "id": "9fdeee37-7153-4002-ab73-d47bd58adf79",
+      "name": "Send VIP Message3",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -2528,
+        2256
+      ],
+      "webhookId": "0b64b547-0b65-4498-99fc-cff66be8d524",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "=Your QA Limit has reached for further questions we will contact you soon.",
+        "additionalFields": {}
+      },
+      "id": "04961bd6-0a5b-4c9a-95b5-5eb7acb023bb",
+      "name": "Send VIP Message4",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -3024,
+        1968
+      ],
+      "webhookId": "0b64b547-0b65-4498-99fc-cff66be8d524",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Normal reply\": {\n      \"type\": \"string\",\n      \"description\": \"Normal reply to the user's question\"\n    },\n    \"quota reached\": {\n      \"type\": \"number\",\n      \"description\": \"number of questions user have been asked\"\n    },\n    \"Schedule Call\": {\n      \"type\": \"string\",\n      \"description\": \"yes or no\"\n    }\n  },\n  \"required\": [\n    \"Normal reply\",\n    \"quota reached\",\n    \"Schedule Call\"\n  ],\n  \"additionalProperties\": false\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2464,
+        1440
+      ],
+      "id": "9b5abf9f-c8e5-4706-8bcc-da0834f65dc3",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d0e47210-219a-445e-9552-1fc86b8b94ad",
+              "leftValue": "={{ $json.output['quota reached'] }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3184,
+        1968
+      ],
+      "id": "a1d82a50-be3c-475f-baae-f75877decf64",
+      "name": "quota check1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f4d29161-7575-4322-b8b5-a65ee7b956c3",
+              "leftValue": "={{ $json.output['Schedule Call'] }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3168,
+        2432
+      ],
+      "id": "5bb5772f-e85b-425a-a37f-0b2aa825bb36",
+      "name": "call scheduled?1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6a5d66c4-12cf-49c9-bcb6-e11c952612df",
+              "leftValue": "={{ $json.output['Normal reply'] }}",
+              "rightValue": "schedule a call",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2832,
+        1952
+      ],
+      "id": "969884f4-84f9-4158-9d3b-9ecc33a8736e",
+      "name": "normal vs scheduled replay1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "RETURNING",
+            "wa_id": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}"
+          },
+          "matchingColumns": [
+            "wa_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "wa_id",
+              "displayName": "wa_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "group size",
+              "displayName": "group size",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "travel dates",
+              "displayName": "travel dates",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Package Type",
+              "displayName": "Package Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Family",
+                  "value": "Family"
+                },
+                {
+                  "name": "Couple",
+                  "value": "Couple"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Selected Package Name",
+              "displayName": "Selected Package Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "no of questions",
+              "displayName": "no of questions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "NEW",
+                  "value": "NEW"
+                },
+                {
+                  "name": "RETURNING",
+                  "value": "RETURNING"
+                },
+                {
+                  "name": "QUALIFYING",
+                  "value": "QUALIFYING"
+                },
+                {
+                  "name": "SELECTING",
+                  "value": "SELECTING"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3600,
+        2032
+      ],
+      "id": "4e21d13e-fdae-420c-801a-5363ff81bafc",
+      "name": "Update record1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -3472,
+        1904
+      ],
+      "id": "941a1c59-3af2-41c9-b961-4de11bae296e",
+      "name": "Send message2",
+      "webhookId": "7d01fe67-baef-4ed8-b894-ba09ca179a4a",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "filterByFormula": "={wa_id} = '{{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3184,
+        1408
+      ],
+      "id": "d642f3da-2cbe-4b7f-982e-aefc1860a948",
+      "name": "Search records3",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+        "collectionName": "dejaVu",
+        "databaseName": "dejaVu",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryMongoDbChat",
+      "typeVersion": 1,
+      "position": [
+        -2864,
+        800
+      ],
+      "id": "71ff0ea1-8aca-4903-b53f-1e1ac54ad206",
+      "name": "MongoDB Chat Memory",
+      "credentials": {
+        "mongoDb": {
+          "id": "QdCdzyu8kHip5VXp",
+          "name": "MongoDB HIROOTS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+        "collectionName": "dejaVu",
+        "databaseName": "dejaVu",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryMongoDbChat",
+      "typeVersion": 1,
+      "position": [
+        -4032,
+        1120
+      ],
+      "id": "620e7457-2c52-426d-ba9f-7d3798c3f51a",
+      "name": "MongoDB Chat Memory1",
+      "credentials": {
+        "mongoDb": {
+          "id": "QdCdzyu8kHip5VXp",
+          "name": "MongoDB HIROOTS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+        "collectionName": "dejaVu",
+        "databaseName": "dejaVu",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryMongoDbChat",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        1536
+      ],
+      "id": "52792bff-8a82-4156-82e7-72c675f53d03",
+      "name": "MongoDB Chat Memory2",
+      "credentials": {
+        "mongoDb": {
+          "id": "QdCdzyu8kHip5VXp",
+          "name": "MongoDB HIROOTS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+        "collectionName": "dejaVu",
+        "databaseName": "dejaVu",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryMongoDbChat",
+      "typeVersion": 1,
+      "position": [
+        -3040,
+        1568
+      ],
+      "id": "f56ca155-20f3-4251-9c9e-d343b75f3067",
+      "name": "MongoDB Chat Memory3",
+      "credentials": {
+        "mongoDb": {
+          "id": "QdCdzyu8kHip5VXp",
+          "name": "MongoDB HIROOTS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -3648,
+        2752
+      ],
+      "id": "1f17b9d7-dc78-4e3b-b4cb-7a6cdc565f86",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "filterByFormula": "=IS_AFTER(CREATED_TIME(), DATEADD(TODAY(), -7, 'days')) ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3424,
+        2752
+      ],
+      "id": "042c50fd-e9a4-4d71-be78-7d2fb358ba1c",
+      "name": "Search records4",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n JavaScript Code Node\n// This code processes input items and generates a status report\n\n// Get all input items\nconst items = $input.all();\n\n// Count records by status\nconst statusCounts = {};\nlet totalRecords = 0;\n\nitems.forEach(item => {\n  totalRecords++;\n  const status = item.json.status || 'NO_STATUS';\n  statusCounts[status] = (statusCounts[status] || 0) + 1;\n});\n\n// Create status breakdown with percentages\nconst statusBreakdown = Object.entries(statusCounts).map(([status, count]) => ({\n  status,\n  count,\n  percentage: ((count / totalRecords) * 100).toFixed(2)\n}));\n\n// Sort by count (descending)\nstatusBreakdown.sort((a, b) => b.count - a.count);\n\n// Create formatted WhatsApp message\nlet message = `📊 *STATUS REPORT*\\n`;\nmessage += `${'='.repeat(30)}\\n\\n`;\nmessage += `📅 *Generated:* ${new Date().toLocaleString('en-US', { \n  timeZone: 'Asia/Karachi',\n  dateStyle: 'medium',\n  timeStyle: 'short'\n})}\\n`;\nmessage += `📈 *Total Records:* ${totalRecords}\\n\\n`;\nmessage += `*Status Breakdown:*\\n`;\nmessage += `${'-'.repeat(30)}\\n\\n`;\n\n// Add each status with count and percentage\nstatusBreakdown.forEach(item => {\n  message += `▪️ *${item.status}*\\n`;\n  message += `   Count: ${item.count} (${item.percentage}%)\\n\\n`;\n});\n\nmessage += `${'-'.repeat(30)}`;\n\n// Create the final report\nconst report = {\n  totalRecords,\n  reportGeneratedAt: new Date().toISOString(),\n  statusCounts,\n  statusBreakdown,\n  whatsappMessage: message\n};\n\n// Return the report as output\nreturn [\n  {\n    json: report\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3200,
+        2752
+      ],
+      "id": "081ad628-43c1-4390-870d-225870a6bfd9",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.whatsappMessage }}",
+        "additionalFields": {}
+      },
+      "id": "4d69f008-5796-4207-b74b-ec7415bbce63",
+      "name": "Send VIP Message5",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -2976,
+        2752
+      ],
+      "webhookId": "0b64b547-0b65-4498-99fc-cff66be8d524",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Weekly Reports\n### Every Week at Sunday Midnight",
+        "height": 320,
+        "width": 1952,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4240,
+        2640
+      ],
+      "id": "2329b334-b03a-4a7e-bb0e-a7cbb0661f64",
+      "name": "Sticky Note16"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblCLMtmhKQeH8w4f",
+          "mode": "list",
+          "cachedResultName": "rate_limiting",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblCLMtmhKQeH8w4f"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "wa_id": "={{ $('WhatsApp Trigger1').item.json.contacts[0].wa_id }}",
+            "message": "={{ $('WhatsApp Trigger1').item.json.messages[0].text.body }}"
+          },
+          "matchingColumns": [
+            "wa_id"
+          ],
+          "schema": [
+            {
+              "id": "wa_id",
+              "displayName": "wa_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created time",
+              "displayName": "Created time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f969d624-291a-4999-95bc-9842b337bb50",
+      "name": "store user message",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3520,
+        400
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a860f053-a90d-4cf2-9e9f-d1d94638392e",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Blocked",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3792,
+        400
+      ],
+      "id": "40324a67-d175-40b9-9bbb-8af4f8cce9c2",
+      "name": "Blocked?"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblcnErWQ7nOSZwot",
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblcnErWQ7nOSZwot"
+        },
+        "filterByFormula": "={wa_id} = '{{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3968,
+        400
+      ],
+      "id": "36c585ab-231a-4393-9e81-9b6c8b17658d",
+      "name": "Get Record",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Rate limiting check\nconst rateLimit = $input.all();\nconst messageCount = rateLimit.length;\nconst MAX_MESSAGES_PER_5MIN = 10;\nconst message = $('WhatsApp Trigger1').first().json.messages[0].text.body.toLowerCase();\n\nif (messageCount >= MAX_MESSAGES_PER_5MIN) {\n  return {\n    isSpam: true,\n    reason: 'rate_limit_exceeded',\n    messageCount: messageCount,\n    action: 'block_temporary',\n    message: message\n  };\n}\n\n// Check for spam keywords\nconst spamKeywords = [\n  'click here', 'free money', 'winner', 'urgent action',\n  'limited time', 'act now', 'bitcoin', 'crypto investment'\n];\n\nconst containsSpam = spamKeywords.some(keyword => message.includes(keyword));\n\nif (containsSpam) {\n  return {\n    isSpam: true,\n    reason: 'spam_keywords_detected',\n    action: 'review_required',\n    message: message\n  };\n}\n\n// Check message patterns\nconst urlPattern = /(https?:\\/\\/[^\\s]+)/g;\nconst urls = message.match(urlPattern) || [];\n\nif (urls.length > 3) {\n  return {\n    isSpam: true,\n    reason: 'excessive_urls',\n    urlCount: urls.length,\n    action: 'review_required',\n    message: message\n  };\n}\n\nreturn {\n  isSpam: false,\n  reason: 'passed_all_checks',\n  action: 'continue',\n  message: message,\n  messageCount: messageCount\n};"
+      },
+      "id": "89757e4f-d649-4f07-a009-7ed861b99891",
+      "name": "Spam Analyzer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3152,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "spam-check",
+              "leftValue": "={{ $json.isSpam }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4c0ed728-8eba-4662-b7ac-eaccc111ef0f",
+      "name": "Is Spam?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2976,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblcnErWQ7nOSZwot",
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblcnErWQ7nOSZwot"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Blocked",
+            "wa_id": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+            "Name": "={{ $('WhatsApp Trigger1').first().json.contacts[0].profile.name }}"
+          },
+          "matchingColumns": [
+            "wa_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "wa_id",
+              "displayName": "wa_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Normal",
+                  "value": "Normal"
+                },
+                {
+                  "name": "Blocked",
+                  "value": "Blocked"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2736,
+        384
+      ],
+      "id": "77748114-28e1-49ba-a0e0-83c84fdebeb6",
+      "name": "Spam -> Blocked",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3af218cd-9b60-4751-a1fe-6d4ab00585de",
+              "leftValue": "={{ $json.wa_id }}",
+              "rightValue": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4016,
+        640
+      ],
+      "id": "0d60c9af-c158-48e3-9fc5-63f79103308d",
+      "name": "Exists?"
+    },
+    {
+      "parameters": {
+        "content": "## 1.1: update state: New -> Qualifying",
+        "height": 224,
+        "width": 400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2704,
+        576
+      ],
+      "id": "64d41948-4aa8-42bc-ac75-8ea620bf08ef",
+      "name": "Sticky Note18"
+    },
+    {
+      "parameters": {
+        "content": "### 2.2. Qualification Agent",
+        "height": 384,
+        "width": 512,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4224,
+        880
+      ],
+      "id": "191cd02d-97df-432c-bbda-1ea372451529",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "### 2.3. Parser Agent",
+        "height": 384,
+        "width": 304,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3696,
+        880
+      ],
+      "id": "f54a893b-1702-4edb-bd39-3972e95b89c6",
+      "name": "Sticky Note19"
+    },
+    {
+      "parameters": {
+        "content": "### 2.4. VIP or NOT",
+        "height": 384,
+        "width": 256,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3376,
+        880
+      ],
+      "id": "da07ca19-fbcd-4532-b761-a51870dd6dbe",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "content": "### 2.5. Send MSG to Business Owner",
+        "height": 240,
+        "width": 624,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3088,
+        1024
+      ],
+      "id": "e0991ebc-4b54-45aa-bee4-9db58d45a7b2",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "message",
+              "value": "The Group size is grater then 10."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d6e861c2-be8d-4ae0-b180-f8a0b5b39cd0",
+      "name": "Set Field",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -2864,
+        1088
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.output.group_size.toNumber() }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "id": "450fd12f-8a23-4139-af88-1c08608da48c"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e11bd73d-af19-451d-8bf2-3f1c939982ab",
+      "name": "Group > 10?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -3312,
+        928
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 3.1. Package Selection Agent with tools",
+        "height": 512,
+        "width": 928,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4224,
+        1360
+      ],
+      "id": "38f44953-9e8e-4d9b-81de-4e08e56cc99c",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "content": "## 3.2. Quota Reached?",
+        "height": 288,
+        "width": 368,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4224,
+        1888
+      ],
+      "id": "ce86ee38-73c8-477b-af20-bc1587ee70c4",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## 3.3. Reply to User",
+        "height": 288,
+        "width": 544,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3840,
+        1888
+      ],
+      "id": "8687576d-51b1-4d3e-ac9b-d581627a8bf1",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## 3.4. Call Scheduled",
+        "height": 416,
+        "width": 368,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4224,
+        2176
+      ],
+      "id": "8da4a2a6-1f46-4733-a650-58e834b52326",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## 3.5. Actions based on business Hours",
+        "height": 400,
+        "width": 544,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3840,
+        2192
+      ],
+      "id": "3fa69fc8-ebb6-4506-ac83-e46ea2c69f02",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## 4. Returning Package Selection Agent\n",
+        "height": 1312,
+        "width": 944
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3232,
+        1296
+      ],
+      "id": "7f071990-683a-457b-ac58-51b59dcecb78",
+      "name": "Sticky Note23"
+    },
+    {
+      "parameters": {
+        "content": "### 4.1. Package Selection Agent with tools",
+        "height": 496,
+        "width": 912,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3216,
+        1376
+      ],
+      "id": "20c10bdf-228e-4f89-9438-d8777f54505b",
+      "name": "Sticky Note24"
+    },
+    {
+      "parameters": {
+        "content": "## 4.2. Quota Reached?",
+        "height": 288,
+        "width": 336,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3216,
+        1888
+      ],
+      "id": "154bc682-e66e-439e-bf86-7b70d055f6e0",
+      "name": "Sticky Note17"
+    },
+    {
+      "parameters": {
+        "content": "## 4.3. Reply to User",
+        "height": 288,
+        "width": 560,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2864,
+        1888
+      ],
+      "id": "95a4f861-8cab-4fb2-88d3-1cb1eb44f96b",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "RETURNING",
+            "wa_id": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}"
+          },
+          "matchingColumns": [
+            "wa_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "wa_id",
+              "displayName": "wa_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "group size",
+              "displayName": "group size",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "travel dates",
+              "displayName": "travel dates",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Package Type",
+              "displayName": "Package Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Family",
+                  "value": "Family"
+                },
+                {
+                  "name": "Couple",
+                  "value": "Couple"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Selected Package Name",
+              "displayName": "Selected Package Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "no of questions",
+              "displayName": "no of questions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "NEW",
+                  "value": "NEW"
+                },
+                {
+                  "name": "RETURNING",
+                  "value": "RETURNING"
+                },
+                {
+                  "name": "QUALIFYING",
+                  "value": "QUALIFYING"
+                },
+                {
+                  "name": "SELECTING",
+                  "value": "SELECTING"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2656,
+        2032
+      ],
+      "id": "b240fb0c-480f-4e4a-8919-69f59b8f903c",
+      "name": "Update record3",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -2544,
+        1888
+      ],
+      "id": "b9e22f4a-991c-46f4-8dfc-ffd6da845a7f",
+      "name": "Send message3",
+      "webhookId": "7d01fe67-baef-4ed8-b894-ba09ca179a4a",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## 4.4. Call Scheduled",
+        "height": 400,
+        "width": 336,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3216,
+        2192
+      ],
+      "id": "598798b8-82bd-4feb-ad33-97f8cd97ae44",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {
+        "content": "## 4.5. Actions based on business Hours",
+        "height": 400,
+        "width": 560,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2864,
+        2192
+      ],
+      "id": "e259a543-2fca-46c8-a3fd-6964bb2a7f1e",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "content": "## WhatsApp Tour Workflow",
+        "height": 2704,
+        "width": 1984,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4256,
+        272
+      ],
+      "id": "00184025-8052-4ffc-addb-21ae6cc3c9a1",
+      "name": "Sticky Note28"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+        "textBody": "=Your Call has been Scheduled and we will contact you soon.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -3408,
+        2032
+      ],
+      "id": "a5d0fb37-2725-48e2-a4e9-cd6cb091161d",
+      "name": "Send message4",
+      "webhookId": "7d01fe67-baef-4ed8-b894-ba09ca179a4a",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+        "textBody": "=Your Call has been Scheduled and we will contact you soon.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -2432,
+        2032
+      ],
+      "id": "fc22f976-b133-449e-9de1-90263c5464e3",
+      "name": "Send message5",
+      "webhookId": "7d01fe67-baef-4ed8-b894-ba09ca179a4a",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "OWQOys0OTyKFADl4",
+          "name": "WhatsApp DEJAVU TEST"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "wa_id": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+            "no of questions": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('no_of_questions', `here will be no_of_question.`, 'number') }}",
+            "Selected Package Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Selected_Package_Name', `here will be package link`, 'string') }}",
+            "Full Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Full_Name', `here will be user name.`, 'string') }}",
+            "group size": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('group_size', `Group size will be here`, 'number') }}",
+            "travel dates": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('travel_dates', `here will be travel dates.`, 'string') }}",
+            "country": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('country', `country name will be here.`, 'string') }}",
+            "Package Type": "Family"
+          },
+          "matchingColumns": [
+            "wa_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "wa_id",
+              "displayName": "wa_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "group size",
+              "displayName": "group size",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "travel dates",
+              "displayName": "travel dates",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Package Type",
+              "displayName": "Package Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Family",
+                  "value": "Family"
+                },
+                {
+                  "name": "Couple",
+                  "value": "Couple"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Selected Package Name",
+              "displayName": "Selected Package Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "no of questions",
+              "displayName": "no of questions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "NEW",
+                  "value": "NEW"
+                },
+                {
+                  "name": "RETURNING",
+                  "value": "RETURNING"
+                },
+                {
+                  "name": "QUALIFYING",
+                  "value": "QUALIFYING"
+                },
+                {
+                  "name": "SELECTING",
+                  "value": "SELECTING"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        -3040,
+        1712
+      ],
+      "id": "8c34d954-b2e4-41bc-b27e-cd5f304e0e90",
+      "name": "Update record for Family Package",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appE9PPe6PtxpWYhP",
+          "mode": "list",
+          "cachedResultName": "DejaVu_tours",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTzBJgdCpcrWhT0",
+          "mode": "list",
+          "cachedResultName": "Qualification_table",
+          "cachedResultUrl": "https://airtable.com/appE9PPe6PtxpWYhP/tblTzBJgdCpcrWhT0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "wa_id": "={{ $('WhatsApp Trigger1').first().json.contacts[0].wa_id }}",
+            "no of questions": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('no_of_questions', `here will be no_of_question.`, 'number') }}",
+            "Selected Package Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Selected_Package_Name', `here will be package link`, 'string') }}",
+            "Full Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Full_Name', `here will be user name.`, 'string') }}",
+            "group size": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('group_size', `Group size will be here`, 'number') }}",
+            "travel dates": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('travel_dates', `here will be travel dates.`, 'string') }}",
+            "country": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('country', `country name will be here.`, 'string') }}",
+            "Package Type": "Family"
+          },
+          "matchingColumns": [
+            "wa_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "wa_id",
+              "displayName": "wa_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "group size",
+              "displayName": "group size",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "travel dates",
+              "displayName": "travel dates",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Package Type",
+              "displayName": "Package Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Family",
+                  "value": "Family"
+                },
+                {
+                  "name": "Couple",
+                  "value": "Couple"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Selected Package Name",
+              "displayName": "Selected Package Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "no of questions",
+              "displayName": "no of questions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "NEW",
+                  "value": "NEW"
+                },
+                {
+                  "name": "RETURNING",
+                  "value": "RETURNING"
+                },
+                {
+                  "name": "QUALIFYING",
+                  "value": "QUALIFYING"
+                },
+                {
+                  "name": "SELECTING",
+                  "value": "SELECTING"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        -2896,
+        1712
+      ],
+      "id": "ce20dde7-0098-49a5-a3b8-6ca868bac9fe",
+      "name": "Update record for Couple Package",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "fngrG1ecnxpi9ocl",
+          "name": "deja_tours_travel"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "WhatsApp Trigger1": [
+      {
+        "json": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "15556328413",
+            "phone_number_id": ""
+          },
+          "contacts": [
+            {
+              "profile": {
+                "name": "Jalal"
+              },
+              "wa_id": "92783743401"
+            }
+          ],
+          "messages": [
+            {
+              "from": "923460990946",
+              "id": "wamid.HBgMOTIzNDYwOTkwOTQ2FQIAEhgUM0E1MjZGNEJBMjY3RDQwNkMwMTgA",
+              "timestamp": "1759835299",
+              "text": {
+                "body": "yes i need some upadtion this time, the group size will 6 and travel dates will be from 12/10/2025 to 16/10/2025"
+              },
+              "type": "text"
+            }
+          ],
+          "field": "messages"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Route by State": {
+      "main": [
+        [
+          {
+            "node": "Greeting Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Search records3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Qualification Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Greeting Agent": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualification Agent": {
+      "main": [
+        [
+          {
+            "node": "Qualification Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualification Complete?": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Spam Warning2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Package Selection Agent": {
+      "main": [
+        [
+          {
+            "node": "quota check",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "normal vs scheduled replay",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "call scheduled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Greeting Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Greeting Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualification Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Qualification Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Package Selection Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Package Selection Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Packages Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Package Selection Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create New User State": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Get Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search User Records": {
+      "main": [
+        [
+          {
+            "node": "Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Rate Limit": {
+      "main": [
+        [
+          {
+            "node": "Spam Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Route by State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record": {
+      "main": [
+        [
+          {
+            "node": "Send Spam Warning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Package Selection Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Package Selection Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record in Airtable": {
+      "ai_tool": [
+        [
+          {
+            "node": "Package Selection Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get number of question": {
+      "ai_tool": [
+        [
+          {
+            "node": "Package Selection Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Within Business Hours 9-6?": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send CRM Calendar Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send CRM Calendar Link": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Send VIP Message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records1": {
+      "main": [
+        [
+          {
+            "node": "Set Field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Group > 10?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Package Selection Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "quota check": {
+      "main": [
+        [
+          {
+            "node": "Send VIP Message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "call scheduled?": {
+      "main": [
+        [
+          {
+            "node": "Within Business Hours 9-6?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "normal vs scheduled replay": {
+      "main": [
+        [
+          {
+            "node": "Send message2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update record1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Packages Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Package Selection Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Package Selection Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Package Selection Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Package Selection Agent1": {
+      "main": [
+        [
+          {
+            "node": "quota check1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "normal vs scheduled replay1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "call scheduled?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Package Selection Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get number of question1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Package Selection Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Within Business Hours 9-6?1": {
+      "main": [
+        [
+          {
+            "node": "Search records2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send CRM Calendar Link1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send CRM Calendar Link1": {
+      "main": [
+        [
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records2": {
+      "main": [
+        [
+          {
+            "node": "Send VIP Message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Package Selection Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "quota check1": {
+      "main": [
+        [
+          {
+            "node": "Send VIP Message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "call scheduled?1": {
+      "main": [
+        [
+          {
+            "node": "Within Business Hours 9-6?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records3": {
+      "main": [
+        [
+          {
+            "node": "Package Selection Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Greeting Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Qualification Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB Chat Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "Package Selection Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB Chat Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "Package Selection Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search records4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Send VIP Message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "store user message": {
+      "main": [
+        [
+          {
+            "node": "Check Rate Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Blocked?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "store user message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Record": {
+      "main": [
+        [
+          {
+            "node": "Blocked?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Spam Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Is Spam?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Spam?": {
+      "main": [
+        [
+          {
+            "node": "Spam -> Blocked",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Search User Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Spam -> Blocked": {
+      "main": [
+        [
+          {
+            "node": "Send Spam Warning1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exists?": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create New User State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Field": {
+      "main": [
+        [
+          {
+            "node": "Send VIP Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Group > 10?": {
+      "main": [
+        [
+          {
+            "node": "Search records1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update record2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "normal vs scheduled replay1": {
+      "main": [
+        [
+          {
+            "node": "Send message3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update record3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record1": {
+      "main": [
+        [
+          {
+            "node": "Send message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record3": {
+      "main": [
+        [
+          {
+            "node": "Send message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record for Family Package": {
+      "ai_tool": [
+        [
+          {
+            "node": "Package Selection Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record for Couple Package": {
+      "ai_tool": [
+        [
+          {
+            "node": "Package Selection Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "cfe0f56e-935f-44b0-ad6b-b128577c797e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "622d1fdf01a106fef61ea6f07fcf94e60b6be7053c44d93e616af34484dd7f8f"
+  },
+  "id": "B9XYKflLblsEstSj",
+  "tags": []
+}
