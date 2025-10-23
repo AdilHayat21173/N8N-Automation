@@ -1,0 +1,579 @@
+{
+  "name": "adil",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -848,
+        -32
+      ],
+      "id": "776799e4-225a-42eb-a35b-7ebe49414010",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1xahAEayzGh8FchIVpjfN932y2OSIcBc_GX_v7EX0iY4",
+          "mode": "list",
+          "cachedResultName": "SciePro Prospect List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xahAEayzGh8FchIVpjfN932y2OSIcBc_GX_v7EX0iY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xahAEayzGh8FchIVpjfN932y2OSIcBc_GX_v7EX0iY4/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Email Template ",
+              "lookupValue": "="
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -656,
+        -32
+      ],
+      "id": "c5710e4c-9837-4882-96cf-ba2323115f6f",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uSTQZYzGcIsam3US",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        224
+      ],
+      "id": "c3df4c30-20a8-4591-9144-8b060df3b881",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "NsTy1miUf6qKZ3U5",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.Website }}",
+        "options": {
+          "redirect": {}
+        }
+      },
+      "id": "d3c4e1bb-b49e-4985-a843-3b399735bed7",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -400,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": "title"
+            },
+            {
+              "key": "h1",
+              "cssSelector": "h1"
+            },
+            {
+              "key": "meta_description",
+              "cssSelector": "meta[name=\"description\"]",
+              "returnValue": "attribute",
+              "attribute": "content"
+            },
+            {
+              "key": "og_type",
+              "cssSelector": "meta[property=\"og:type\"]",
+              "returnValue": "attribute",
+              "attribute": "content"
+            },
+            {
+              "key": "canonical",
+              "cssSelector": "link[rel=\"canonical\"]",
+              "returnValue": "attribute",
+              "attribute": "href"
+            },
+            {
+              "key": "nav_items",
+              "cssSelector": "nav a",
+              "returnArray": true
+            },
+            {
+              "key": "headings",
+              "cssSelector": "h2, h3",
+              "returnArray": true
+            },
+            {
+              "key": "scripts",
+              "cssSelector": "script[src]",
+              "returnValue": "attribute",
+              "attribute": "src",
+              "returnArray": true
+            },
+            {
+              "key": "all_links",
+              "cssSelector": "a[href]",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            },
+            {
+              "key": "body_text",
+              "cssSelector": "main, article, body"
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": true
+        }
+      },
+      "id": "14b4f9a7-39a8-4651-85ca-afe0ef0b4d2e",
+      "name": "HTML1",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Title:{{ $json.title }} \nh1:{{ $json.h1 }}\nMeta_Description:{{ $json.meta_description }} \nBody_Text:{{ $json.body_text }} ",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a strict lead classifier for SciePro. Output must be valid JSON that matches the provided schema. \nChoose exactly ONE tag from this fixed set:\n- Universities/Institutions\n- Medical animation studios\n- Legal animation studios\n- 3D print companies\n- App developers\n- Medtech, pharma, and healthcare marketing teams\n- Other/Unknown\n\nDecision rules (high level):\n• Universities/Institutions → universities, colleges, med schools, teaching hospitals, curricula, departments, labs, “faculty”, “students”. (DE: Universität, Hochschule, Fakultät, Lehrstuhl)\n• Medical animation studios → terms like “medical animation”, “MoA/MoD”, studio/agency reels, portfolio of animations.\n• Legal animation studios → forensic/courtroom animation, litigation support, demonstratives, admissible evidence.\n• 3D print companies → 3D printing, additive manufacturing, surgical simulators, printed anatomical models, Stratasys partners. (DE: 3D-Druck, additive Fertigung)\n• App developers → companies building medical/digital software, SDKs, platforms, apps, VR/AR training tools, viewer/processing software (DICOM/PACS), dev-oriented language. (DE: Software, Lösung, Plattform, Entwickler)\n• Medtech, pharma, and healthcare marketing teams → device/drug/biotech companies or care providers producing comms/visual content in-house (HCP, marketing, brand, comms).\n• If several match, pick the ONE that best reflects the organization’s core business model (not a single blog post). Prefer “App developers” for software-platform vendors; prefer “Universities/Institutions” when clearly academic; prefer “3D print companies” if physical printing/simulation is a core offering.\n\nReturn the tag and the summary of the user input. \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        -32
+      ],
+      "id": "7c1c973e-6077-419f-9dda-a78baa6cf9e7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"tag\": \"\",\n\t\"summary\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        192
+      ],
+      "id": "c734e888-4588-4b5f-bb85-48c1370ddda3",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1xahAEayzGh8FchIVpjfN932y2OSIcBc_GX_v7EX0iY4",
+          "mode": "list",
+          "cachedResultName": "SciePro Prospect List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xahAEayzGh8FchIVpjfN932y2OSIcBc_GX_v7EX0iY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2076602539,
+          "mode": "list",
+          "cachedResultName": "Sheet4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xahAEayzGh8FchIVpjfN932y2OSIcBc_GX_v7EX0iY4/edit#gid=2076602539"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Tag",
+              "lookupValue": "={{ $json.output.tag }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        -32
+      ],
+      "id": "32e678e6-18fb-4a20-96fa-4dacb001a9fb",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uSTQZYzGcIsam3US",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1xahAEayzGh8FchIVpjfN932y2OSIcBc_GX_v7EX0iY4",
+          "mode": "list",
+          "cachedResultName": "SciePro Prospect List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xahAEayzGh8FchIVpjfN932y2OSIcBc_GX_v7EX0iY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xahAEayzGh8FchIVpjfN932y2OSIcBc_GX_v7EX0iY4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "New Category": "={{ $('Get row(s) in sheet1').item.json.Tag }}",
+            "Email Template ": "=Subject:{{ $json.output.subject }}\n\nBody:{{ $json.output.body }}",
+            "Email": "={{ $('Get row(s) in sheet').item.json.Email }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Business Name",
+              "displayName": "Business Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Contact First Name",
+              "displayName": "Contact First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Contact Last Name",
+              "displayName": "Contact Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Linkedin",
+              "displayName": "Linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email Template ",
+              "displayName": "Email Template ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "New Category",
+              "displayName": "New Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        992,
+        -32
+      ],
+      "id": "b6044184-22e3-4f2a-aa7f-748d1d42785c",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uSTQZYzGcIsam3US",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tag:{{ $json.Tag }}\nEmail:{{ $json.Email }}\nSummary:{{ $('AI Agent').item.json.output.summary }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=SYSTEM PROMPT — Personalized Email Generator\n\nRole:\nYou are an AI Email Writing Assistant. Your goal is to generate a personalized and professional email based on the provided summary and available email template.\n\n🎯 Logic & Workflow\n\nInputs:\n\nTag: {{ $json.Tag }}\n\nEmail: {{ $json.Email }}\n\nSummary: {{ $('AI Agent').item.json.output.summary }}\n\nSteps:\n\nUnderstand the Summary:\nRead the “Summary” carefully to understand the user’s intent, topic, and tone.\n\nUse the Provided Email Template:\nThe variable {{ $json.Email }} contains a pre-defined email template.\nYou must follow that template’s structure, style, and format.\n\nPersonalize the Email:\n\nModify the content according to the “Summary”.\n\nKeep it relevant to the Tag (for example, “sales”, “partnership”, “marketing”, etc.).\n\nMaintain a natural, human-like flow.\n\nInclude a clear subject line if not already present in the template.\n\nOutput Format:\nupdate the first name in Email based on this {{ $('Get row(s) in sheet').item.json['Contact First Name'] }}.\nThe final output should be a fully written, ready-to-send email that looks like it was composed by a professional human writer.\nreturn output subject and body "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        -32
+      ],
+      "id": "ffccae35-4f11-4b3e-b8c6-80fb2efaa17d",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"subject\": \"\",\n\t\"body\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        800,
+        160
+      ],
+      "id": "e1ad1f7e-3cb6-4d5f-a5d8-968f0d2501a9",
+      "name": "Structured Output Parser1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTML1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "648461a2-e4c4-4204-b87b-f2064392d8da",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4a5982d1a78b7a644795dac7182c74ebf36c12c789be7a8831e7d7eae9a49685"
+  },
+  "id": "GDru9boPDd3yFJZE",
+  "tags": []
+}
