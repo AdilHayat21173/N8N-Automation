@@ -1,0 +1,632 @@
+{
+  "name": "Translation",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "email",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "type123"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        848,
+        112
+      ],
+      "id": "75c047ab-c5a7-44ab-b02d-16aefaf67849",
+      "name": "On form submission",
+      "webhookId": "e0ae58b9-ca97-4d56-bf88-07da3271cbc9"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1xEeneeXDDtmItDVyAGV9pOiDi8-eYLbaGrj-_3aixfg",
+          "mode": "list",
+          "cachedResultName": "Copy of SciePro 3d Anatomy - List II - translations",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xEeneeXDDtmItDVyAGV9pOiDi8-eYLbaGrj-_3aixfg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Terminologica Anatomica (TA)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xEeneeXDDtmItDVyAGV9pOiDi8-eYLbaGrj-_3aixfg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Spanish"
+            },
+            {
+              "lookupColumn": "Portuguese(Brazil)"
+            },
+            {
+              "lookupColumn": "Russian"
+            },
+            {
+              "lookupColumn": "Chinese"
+            },
+            {
+              "lookupColumn": "Arabic"
+            },
+            {
+              "lookupColumn": "French"
+            },
+            {
+              "lookupColumn": "German"
+            },
+            {
+              "lookupColumn": "Japanese"
+            }
+          ]
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRange",
+              "firstDataRow": 4
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1088,
+        112
+      ],
+      "id": "808cddf0-6ee4-44ac-b689-8de3b8ef00ea",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uSTQZYzGcIsam3US",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1808,
+        112
+      ],
+      "id": "a0e6f831-73ce-4bb4-bb96-231295900654",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json['English Term (US)'] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a translation system for medical/anatomical terms.\n\nINPUT: An English term\n\nOUTPUT: Translate to 8 languages using correct medical terminology.\n\nRULES:\n1. Use proper medical terms for each language\n2. If 2 valid terms exist, separate with \" / \" \n3. NO English words in translations\n4. NO explanations or extra text\n5. Return valid JSON only\n\nOUTPUT:\n{\n  \"english\": \"string\",\n  \"japanese\": \"string\",\n  \"spanish\": \"string\",\n  \"portuguese_br\": \"string\",\n  \"russian\": \"string\",\n  \"chinese\": \"string\",\n  \"arabic\": \"string\",\n  \"french\": \"string\",\n  \"german\": \"string\"\n}\n\nEXAMPLES:\n\nInput: \"Median\"\n{\n  \"english\": \"median\",\n  \"japanese\": \"正中\",\n  \"spanish\": \"mediano\",\n  \"portuguese_br\": \"mediano\",\n  \"russian\": \"срединный\",\n  \"chinese\": \"正中\",\n  \"arabic\": \"أوسط\",\n  \"french\": \"médian\",\n  \"german\": \"median\"\n}\n\nInput: \"Vertical\"\n{\n  \"english\": \"vertical\",\n  \"japanese\": \"垂直\",\n  \"spanish\": \"vertical\",\n  \"portuguese_br\": \"vertical\",\n  \"russian\": \"вертикальный\",\n  \"chinese\": \"垂直\",\n  \"arabic\": \"عمودي\",\n  \"french\": \"vertical\",\n  \"german\": \"vertikal\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2176,
+        96
+      ],
+      "id": "a138a878-53cb-40dc-a975-1c206e86e935",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2176,
+        304
+      ],
+      "id": "5ada0c6d-f2b1-443a-a8e4-0df822548e0c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "9JYwRCjeHxDIDkvY",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Japanese\": \"\",\n  \"Spanish\": \"\",\n  \"Portuguese (Brazil)\": \"\",\n  \"Russian\": \"\",\n  \"Chinese\": \"\",\n  \"Arabic\": \"\",\n  \"French\": \"\",\n  \"German\": \"\"\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2352,
+        304
+      ],
+      "id": "3044acfc-8812-439a-b139-64ff7c9783dc",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1xEeneeXDDtmItDVyAGV9pOiDi8-eYLbaGrj-_3aixfg",
+          "mode": "list",
+          "cachedResultName": "Copy of SciePro 3d Anatomy - List II - translations",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xEeneeXDDtmItDVyAGV9pOiDi8-eYLbaGrj-_3aixfg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Terminologica Anatomica (TA)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xEeneeXDDtmItDVyAGV9pOiDi8-eYLbaGrj-_3aixfg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Japanese": "={{ $json.output.Japanese }}",
+            "Spanish": "={{ $json.output.Spanish }}",
+            "Portuguese(Brazil)": "={{ $json.output['Portuguese (Brazil)'] }}",
+            "Russian": "={{ $json.output.Russian }}",
+            "Chinese": "={{ $json.output.Chinese }}",
+            "Arabic": "={{ $json.output.Arabic }}",
+            "French": "={{ $json.output.French }}",
+            "German": "={{ $json.output.German }}",
+            "English Term": "={{ $('Loop Over Items').item.json['English Term (US)'] }}",
+            "unique ": "={{ $('Loop Over Items').item.json['unique '] }}"
+          },
+          "matchingColumns": [
+            "unique "
+          ],
+          "schema": [
+            {
+              "id": "Learnable slugs",
+              "displayName": "Learnable slugs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "TA number",
+              "displayName": "TA number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "TNA number",
+              "displayName": "TNA number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Mesh ID",
+              "displayName": "Mesh ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Latin Term",
+              "displayName": "Latin Term",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "English Term (US)",
+              "displayName": "English Term (US)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Comments",
+              "displayName": "Comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Has Duplicates",
+              "displayName": "Has Duplicates",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Mask Map Name",
+              "displayName": "Mask Map Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Related Mask",
+              "displayName": "Related Mask",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Parent Mask",
+              "displayName": "Parent Mask",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Parent Mesh",
+              "displayName": "Parent Mesh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Detail Mesh",
+              "displayName": "Detail Mesh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "English Term",
+              "displayName": "English Term",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Japanese",
+              "displayName": "Japanese",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Spanish",
+              "displayName": "Spanish",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Portuguese(Brazil)",
+              "displayName": "Portuguese(Brazil)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Russian",
+              "displayName": "Russian",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Chinese",
+              "displayName": "Chinese",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Arabic",
+              "displayName": "Arabic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "French",
+              "displayName": "French",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "German",
+              "displayName": "German",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Parent_ID",
+              "displayName": "Parent_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Full_Path",
+              "displayName": "Full_Path",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Level",
+              "displayName": "Level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "unique ",
+              "displayName": "unique ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2560,
+        384
+      ],
+      "id": "f94c9804-ae6d-49e5-8c6d-53fc592b7fba",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uSTQZYzGcIsam3US",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "753b04bc-d228-43ef-aa8f-cab9c1f9311c",
+              "leftValue": "={{ $json['English Term (US)'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "5c1ff0dc-a8d4-45de-b078-a2e82cbda38d",
+              "leftValue": "={{ $json.row_number }}",
+              "rightValue": 10000,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "62f4e07c-617b-4cd1-9255-2b53a899abd7",
+              "leftValue": "={{ $json.row_number }}",
+              "rightValue": 13000,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1392,
+        112
+      ],
+      "id": "f11495b5-547e-4201-a9e7-a8e1b47b75c4",
+      "name": "Filter1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c3d6c1e7-255d-4dbb-966b-7f363e3a2255",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4a5982d1a78b7a644795dac7182c74ebf36c12c789be7a8831e7d7eae9a49685"
+  },
+  "id": "uLnRjoGAZe9r7rpzfaEJx",
+  "tags": []
+}

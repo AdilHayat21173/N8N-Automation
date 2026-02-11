@@ -1,0 +1,629 @@
+{
+  "name": "Null Upto 500",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $json.convertedName }}",
+        "limit": 1,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "11dv63xbKFkPTjFVARhFrXt0KQET-UUi2",
+            "mode": "list",
+            "cachedResultName": "watermarks",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/11dv63xbKFkPTjFVARhFrXt0KQET-UUi2"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        384,
+        -80
+      ],
+      "id": "0f02fa85-687a-4726-a844-36b3d00e62dc",
+      "name": "Search files and folders",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "EsxqsCq5UdjL1Bht",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        672,
+        -80
+      ],
+      "id": "1133e9b3-30bd-4bff-a3d6-8181a729a5c2",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "EsxqsCq5UdjL1Bht",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -32,
+        48
+      ],
+      "id": "d0badba9-9e45-4104-8339-a1f7698c071b",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=METADATA:\n- Title: {{ $('Loop Over Items').item.json.Title }}\n- Current description:{{ $('Loop Over Items').item.json.Description }} \n- Keywords: {{ $('Loop Over Items').item.json.keywords }}\n- Body region: {{ $('Loop Over Items').item.json.body_region_id }}\n- Category: {{ $('Loop Over Items').item.json.category_id }}\n- View/Perspective: {{ $('Loop Over Items').item.json.camera_view_id }}\n- Subject {gender}, {age_group}: {{ $('Loop Over Items').item.json.gender }},{{ $('Loop Over Items').item.json.age_group }}\n- image detail:{{ $json['0'].content[0].text }}",
+        "options": {
+          "systemMessage": "=You are a senior medical illustrator and anatomist with 20 years of experience writing catalog descriptions for SciePro, a premium medical stock agency serving academic institutions, medical publishers, and healthcare organizations worldwide.\n\nYou have a deep understanding of:\n- Terminologia Anatomica and proper anatomical nomenclature\n- Clinical relevance of anatomical structures\n- How medical educators, students, and clinicians actually use visual resources\n- SEO principles for medical content without compromising accuracy\n\nYour writing voice is confident, precise, and collegial. You write the way an experienced anatomist speaks to a fellow professional: direct, specific, occasionally dry, never flowery.\n\n\nWrite a 250-350 word product description for a medical illustration in the SciePro catalog.\n\nMETADATA:\n- Title\n- Current description\n- Keywords\n- Body region\n- Category\n- View/Perspective\n- Subject\n- image detail\n\nUser Prompt Template\n\nYOUR TASK:\nBased on this metadata, write a description that a medical professional would find genuinely useful. You must infer anatomical details logically from the title, keywords, and description provided. Use your anatomical expertise to add relevant context that someone searching for this content would want to know.\n\nWrite three flowing paragraphs with no headers, no labels, no section titles. The paragraphs should cover:\n\nParagraph 1: Name the specific structures that would logically be visible based on the title and keywords. Describe their spatial relationships using proper anatomical position terms (anterior, posterior, superior, inferior, medial, lateral, proximal, distal). Be precise but not exhaustive. 2-4 sentences.\n\nParagraph 2: Explain why this particular view or structure matters. Connect it to a clinical scenario, common pathology, surgical approach, or teaching concept. This is where you demonstrate expertise. Avoid generic statements that could apply to any anatomy illustration. 2-3 sentences.\n\nParagraph 3: Suggest specific use cases. Be concrete: name the type of course, publication, or clinical setting. End with: \"Anatomical accuracy verified by SciePro's Medical Advisory Board.\" 1-2 sentences.\n\n---\n\nWRITING RULES:\n\nVoice and Rhythm:\n- Write in active voice by default. Passive voice only when the structure is truly the focus.\n- Vary sentence length deliberately. Follow a long technical sentence with a short declarative one. Example: \"The brachial plexus emerges between the anterior and middle scalene muscles, its trunks immediately dividing into anterior and posterior divisions that will reorganize into cords named for their relationship to the axillary artery. This is where most traction injuries occur.\"\n- Start sentences with different parts of speech. Not every sentence should begin with \"The.\"\n- Use concrete nouns over abstract ones. \"The tendon inserts on the radial tuberosity\" not \"The attachment occurs at the bony prominence.\"\n\nSpecificity Over Generality:\n- Name actual structures, not categories. \"The flexor digitorum superficialis\" not \"the forearm flexors.\"\n- Reference real clinical correlations. \"Often compressed in carpal tunnel syndrome\" not \"may be involved in various pathologies.\"\n- Mention specific imaging planes or surgical approaches when relevant.\n\nNatural Keyword Integration:\n- Weave keywords into grammatically natural sentences. Never list them or force them.\n- Use anatomical synonyms where appropriate (e.g., \"shinbone\" alongside \"tibia\" if targeting mixed audiences).\n- Include the body region naturally in context, not as a label.\n\nWhat Makes Writing Sound Human:\n- Occasional sentence fragments for emphasis. \"A critical landmark.\"\n- Opinions stated as professional judgment. \"This view offers the clearest perspective on...\" rather than \"This view may be considered useful for...\"\n- Slight asymmetry in paragraph lengths.\n- Connecting ideas with simple conjunctions (and, but, so) rather than formal transitions.\n- Using \"you\" sparingly but naturally when addressing the user's needs.\n\n---\n\nABSOLUTE PROHIBITIONS:\n\nCategory 1 — AI Giveaway Words (never use):\ncomprehensive, invaluable, intricate, multifaceted, cutting-edge, seamless, showcase, vital, robust, innovative, groundbreaking, nuanced, transformative, delve, unveil, unlock, elevate, enhance, foster, empower, leverage, crucial, essential, pivotal, optimal, facilitate, utilize, tapestry, landscape, realm, synergy, paradigm, intricacies, plethora, myriad, beacon, bridges the gap, rich tapestry, notably, certainly, undoubtedly\n\nCategory 2 — Forbidden Sentence Starters (never begin a sentence with):\n\"This illustration shows\", \"This image depicts\", \"This detailed\", \"This comprehensive\", \"In this view\", \"Here we see\", \"The following\", \"It is important to note\", \"It should be noted\", \"One can observe\", \"We can see that\", \"Looking at this\", \"The illustration presents\", \"The image displays\", \"This view shows\"\n\nCategory 3 — Banned Transitions and Connectors:\nMoreover, Furthermore, Additionally, Consequently, Subsequently, Notably, Indeed, Certainly, Undoubtedly, In conclusion, To summarize, In summary, That being said, With that said, Having said that, It goes without saying, Needless to say, As such, Thus, Hence, Therefore (at sentence start), However (at sentence start when overused)\n\nCategory 4 — Hollow Modifiers (remove these; they add nothing):\nvery, really, extremely, highly, greatly, significantly, remarkably, particularly, especially, quite, rather, fairly, pretty (as modifier), literally, actually, basically, essentially, virtually, practically\n\nCategory 5 — Cliché Medical Phrases:\n\"plays a crucial role in\", \"is essential for\", \"serves as an important\", \"provides valuable insight into\", \"offers a unique perspective\", \"whether you're a student or professional\", \"for healthcare providers and educators alike\", \"in today's medical field\", \"of utmost importance\"\n\nCategory 6 — Formatting Prohibitions:\n- No em-dashes (—). Use commas, periods, or parentheses instead.\n- No exclamation marks.\n- No rhetorical questions.\n- No bullet points.\n- No headers or section labels.\n- No bold text, no asterisks, no markdown formatting of any kind.\n- No quotation marks for emphasis.\n- Output plain text only.\n\n---\n\nMANDATORY SELF-CHECK (do this before returning your response):\n\n1. Is my first word something other than \"The\" or \"This\"?\n   - If NO: rewrite the first sentence.\n\n2. Do I have at least one sentence with fewer than 10 words?\n   - If NO: add a short punchy sentence somewhere.\n\n3. Do I have at least one sentence with more than 25 words?\n   - If NO: combine two related ideas into one longer sentence.\n\n4. Have I used ANY word from the forbidden lists?\n   - If YES: replace it immediately.\n\n5. Is there ANY markdown formatting (asterisks, underscores, hashes)?\n   - If YES: remove all formatting. Output plain text only.\n\n6. Did I start any sentence with a banned transition word?\n   - If YES: rewrite that sentence.\n\n7. Does my text include a specific clinical correlation that couldn't apply to just any anatomy illustration?\n   - If NO: add one relevant to this specific structure or view.\n\n8. Does my final sentence end with \"Anatomical accuracy verified by SciePro's Medical Advisory Board.\"?\n   - If NO: add it.\n\nOnly return the response after all checks pass.\n\n---\n\nOUTPUT FORMAT:\nThree plain text paragraphs. No headers. No formatting. No asterisks. No bold. No markdown. No preamble or commentary. Start directly with the description.\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1168,
+        -176
+      ],
+      "id": "cafde9f2-6a7a-4f3d-9158-bf0a1a049256",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1cHpxV3H0q4WvWafjGxyHtsXlGHIoLoo58XmlG1ZXeEo",
+          "mode": "list",
+          "cachedResultName": "SciePro - Stock Meta",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cHpxV3H0q4WvWafjGxyHtsXlGHIoLoo58XmlG1ZXeEo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 331161090,
+          "mode": "list",
+          "cachedResultName": "Null",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cHpxV3H0q4WvWafjGxyHtsXlGHIoLoo58XmlG1ZXeEo/edit#gid=331161090"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "long description": "={{ $json.output }}",
+            "filename": "={{ $('Loop Over Items').item.json.filename }}"
+          },
+          "matchingColumns": [
+            "filename"
+          ],
+          "schema": [
+            {
+              "id": "filename",
+              "displayName": "filename",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "input",
+              "displayName": "input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "keywords",
+              "displayName": "keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "category_id",
+              "displayName": "category_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "body_region_id",
+              "displayName": "body_region_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "is_free",
+              "displayName": "is_free",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "labeled",
+              "displayName": "labeled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ethnicity_type",
+              "displayName": "ethnicity_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "age_group",
+              "displayName": "age_group",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "gender",
+              "displayName": "gender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "show_on_main_page",
+              "displayName": "show_on_main_page",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "is_curated",
+              "displayName": "is_curated",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "camera_view_id",
+              "displayName": "camera_view_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "is_sensitive",
+              "displayName": "is_sensitive",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "long description",
+              "displayName": "long description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1440,
+        48
+      ],
+      "id": "889535a2-673b-4d17-859c-8a688c7a0605",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uSTQZYzGcIsam3US",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {
+          "reasoningEffort": "low"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1184,
+        32
+      ],
+      "id": "f2411ef0-0538-49ef-9b09-89f05cfef4a3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "9JYwRCjeHxDIDkvY",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "text": "Analyze the image in detail",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        864,
+        -80
+      ],
+      "id": "454bf0b8-6c0b-43e9-b092-0f347cdf605e",
+      "name": "Analyze image",
+      "credentials": {
+        "openAiApi": {
+          "id": "9JYwRCjeHxDIDkvY",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const fileName = $input.first().json.filename;\n\nconst newFileName = fileName.replace(/\\.png$/i, \".webp\");\n\nreturn [\n  {\n    json: {\n      convertedName: newFileName\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        -80
+      ],
+      "id": "9abb6f38-1535-4735-b87b-667bad38763a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1cHpxV3H0q4WvWafjGxyHtsXlGHIoLoo58XmlG1ZXeEo",
+          "mode": "list",
+          "cachedResultName": "SciePro - Stock Meta",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cHpxV3H0q4WvWafjGxyHtsXlGHIoLoo58XmlG1ZXeEo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 331161090,
+          "mode": "list",
+          "cachedResultName": "Null",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cHpxV3H0q4WvWafjGxyHtsXlGHIoLoo58XmlG1ZXeEo/edit#gid=331161090"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "long description"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -368,
+        48
+      ],
+      "id": "7ca101cf-7308-474a-8304-ab898beceb5b",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uSTQZYzGcIsam3US",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a03a63f5-6236-422d-b4a0-e7551f1dc75b",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        512,
+        -224
+      ],
+      "id": "fbe9e980-3dea-44d8-be99-6db679a69b53",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "formTitle": "Null sheet",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "type123"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -608,
+        48
+      ],
+      "id": "bde9fddc-079a-4fb4-904c-55336b9a3ad8",
+      "name": "On form submission",
+      "webhookId": "22112c73-39f9-44b0-a21c-94784fa92b8d"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7e6ea62d-9d64-4737-bc63-96f80b4c2a1b",
+  "meta": {
+    "instanceId": "4a5982d1a78b7a644795dac7182c74ebf36c12c789be7a8831e7d7eae9a49685"
+  },
+  "id": "SmPHpwEUCz77f_F9TPKLC",
+  "tags": []
+}
