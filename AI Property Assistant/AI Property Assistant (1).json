@@ -1,0 +1,1095 @@
+{
+  "name": "AI Property Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst sessionId = $input.first().json.sessionId;\n\nif (!staticData.userState) staticData.userState = {};\nif (!staticData.cache) staticData.cache = {};\n\nif (!staticData.userState[sessionId]) {\n  staticData.userState[sessionId] = {\n    property_type: \"\",\n    min_price: 0,\n    max_price: 0,\n    city: \"\",\n    state: \"\",\n    availability: \"\",\n    bedrooms: 0\n  };\n}\n\nif (!staticData.cache[sessionId]) {\n  staticData.cache[sessionId] = {};\n}\n\nconst currentState = JSON.parse(JSON.stringify(staticData.userState[sessionId]));\n\nreturn [{\n  json: {\n    sessionId: sessionId,\n    userMessage: $input.first().json.chatInput,\n    currentState: currentState,\n    cache: staticData.cache[sessionId]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1856,
+        -1568
+      ],
+      "id": "92a7a7c1-f430-4554-af87-0f20fb635c6c",
+      "name": "Load State2"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.weatherapi.com/v1/current.json?key=7c62b55f26194523b31210714261103&q={{ $json.city }}&aqi=yes",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1776,
+        -1136
+      ],
+      "id": "590ae591-9ac7-448d-80c5-4f727ec69204",
+      "name": "Get Weather API2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "acb0e1cd-6d60-4a4f-97a9-b820f359c848",
+                    "leftValue": "={{ $('AI Agent1').item.json.output.action }}",
+                    "rightValue": "get_weather",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "weather"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "dce67d5a-e4ec-4a7e-95a7-60bbaaac20f1",
+                    "leftValue": "={{ $('AI Agent1').item.json.output.action }}",
+                    "rightValue": "search_db",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Database"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -2064,
+        -1136
+      ],
+      "id": "a7f64bed-0b79-4d77-86bb-000f32c67321",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "18ea0a8d-4eb6-48df-b780-f497504b3a02",
+              "leftValue": "={{ $json.property_type }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "city-check",
+              "leftValue": "={{ $json.city }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "9975e119-9407-4a77-8fdc-e51573cc5f37",
+              "leftValue": "={{ $json.min_price }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "75adac69-106c-4f9a-b36a-9cc8d9fde974",
+              "leftValue": "={{ $json.max_price }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        -768
+      ],
+      "id": "b0d5da94-d81e-4c17-9b36-0f9b146d4140",
+      "name": "Is DB Search?2"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "properties",
+        "limit": 3,
+        "filterType": "string",
+        "filterString": "=property_type=eq.{{ $json.property_type }}&city=eq.{{ $json.city }}&price=gte.{{ $json.min_price }}&price=lte.{{ $json.max_price }}"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        -1072
+      ],
+      "id": "c9f7db01-781d-4cfd-9dc7-7beee651f886",
+      "name": "Query Supabase2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "UermXbnA1dWZrz6z",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.all().map(i => i.json);\n\n// Get results\nlet results = [];\nif (data.length === 1 && data[0].results) {\n  results = data[0].results;\n} else {\n  results = data.filter(d => d.id !== undefined);\n}\n\n// Get property_type and city from results\nconst propertyType = results[0]?.property_type || 'Property';\nconst cityName = results[0]?.city || 'your area';\n\n// Get price range from Data table row\nconst rowData = $('Get row(s)').first().json;\nconst minPrice = rowData.min_price || 0;\nconst maxPrice = rowData.max_price || 0;\nconst sessionId = rowData.sessionid;\n\n// Cache logic\nconst staticData = $getWorkflowStaticData('global');\nconst cityKey = cityName.toLowerCase();\n\nif (cityKey && results.length > 0) {\n  if (!staticData.cache) staticData.cache = {};\n  if (!staticData.cache[sessionId]) staticData.cache[sessionId] = {};\n  staticData.cache[sessionId][cityKey] = results;\n}\n\n// No results\nif (results.length === 0) {\n  return [{\n    json: {\n      output: `I couldn't find any ${propertyType} in ${cityName} matching your criteria. Try adjusting your budget or location!`\n    }\n  }];\n}\n\n// Build reply message\nlet msg = `Great news! I found ${results.length} ${propertyType}(s) in ${cityName}`;\n\nif (minPrice > 0 || maxPrice > 0) {\n  msg += ` within your budget`;\n  if (minPrice > 0 && maxPrice > 0) msg += ` ($${minPrice} - $${maxPrice})`;\n  else if (maxPrice > 0) msg += ` (up to $${maxPrice})`;\n  else msg += ` (from $${minPrice})`;\n}\nmsg += `:\\n\\n`;\n\nresults.forEach((p, i) => {\n  msg += `🏠 Option ${i + 1}:\\n`;\n  msg += `   Type: ${p.property_type}\\n`;\n  msg += `   Price: $${p.price}/month\\n`;\n  msg += `   City: ${p.city}\\n`;\n  msg += `   Bedrooms: ${p.bedrooms} bed\\n`;\n  if (p.amenities && p.amenities.length) {\n    msg += `   Amenities: ${p.amenities.join(', ')}\\n`;\n  }\n  msg += `\\n`;\n});\n\nmsg += `Would you like to refine your search or see more details?`;\n\nreturn [{ json: { output: msg } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -656,
+        -1072
+      ],
+      "id": "c3d1557e-7b97-4b5f-8894-324de1e5eabc",
+      "name": "Format Property Reply2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -2288,
+        -1568
+      ],
+      "id": "974c875e-ddf1-40dc-bef6-1e1127e97109",
+      "name": "When chat message received",
+      "webhookId": "4ab473eb-3734-4896-9dcd-232c2d5d9adf"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -1456,
+        -1392
+      ],
+      "id": "88096ce4-db4b-4b60-9052-f26e76fcc441",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "bypGl1IKVkXEnLFS",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.userMessage }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a real estate assistant analyzer.\n\nCurrent state: {{ JSON.stringify($json.currentState) }}\nUser message: \"{{ $json.userMessage }}\"\n\nExtract ONLY fields mentioned by the user.\nIf a field is not mentioned return \"\" for strings and 0 for numbers.\n\nFields:\nproperty_type (e.g., Apartment, Villa, Studio, Condo, House — pick the closest standard type)\nmin_price (number)\nmax_price (number)\ncity (string)\nstate (string)\navailability (string — \"true\" or \"false\" or \"\")\nbedrooms (number)\n\nIMPORTANT RULES:\n- If user asks about weather, temperature, climate conditions, or anything like \"is it warm/cold/rainy\" set action=\"get_weather\".\n- If user asks about properties, housing, apartments, rooms, listings set action=\"search_db\".\n- A query like \"warm apartment\" is a property search (action=\"search_db\"), NOT weather.\n- A query like \"is it warm outside?\" or \"what's the weather like?\" is weather (action=\"get_weather\").\n- If property_type is ambiguous (e.g., user says 'houses'), map it to the closest known type (Villa, Apartment, Studio, Condo).\n- Never return null. Use \"\" for empty strings and 0 for empty numbers."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -1408,
+        -1568
+      ],
+      "id": "6392bb12-05ba-4b84-869f-79c10bac4a27",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"updatedState\": {\n    \"property_type\": \"\",\n    \"min_price\": 0,\n    \"max_price\": 0,\n    \"city\": \"\",\n    \"state\": \"\",\n    \"availability\": \"\",\n    \"bedrooms\": 0\n  },\n  \"action\": \"search_db\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1312,
+        -1376
+      ],
+      "id": "cd1b018c-9ed9-40ea-9c52-1250e3449249",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "xrxpA0AlliC41G27",
+          "mode": "list",
+          "cachedResultName": "cache",
+          "cachedResultUrl": "/projects/tyOEkyXQIVzg4fAP/datatables/xrxpA0AlliC41G27"
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -896,
+        -1568
+      ],
+      "id": "fc6b462a-12ed-46a3-a5a3-35122a44d5f7",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "74092f4c-404d-4bc8-8bfa-25dbc255da74",
+              "leftValue": "={{ $json.sessionid }}",
+              "rightValue": "={{ $('Load State2').item.json.sessionId }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2336,
+        -1120
+      ],
+      "id": "80eaf430-5199-4bc8-815f-99d8f8a3b90c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "xrxpA0AlliC41G27",
+          "mode": "list",
+          "cachedResultName": "cache",
+          "cachedResultUrl": "/projects/tyOEkyXQIVzg4fAP/datatables/xrxpA0AlliC41G27"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Get row(s)').item.json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "min_price": 0,
+            "max_price": 0,
+            "bedrooms": 0,
+            "property_type": "={{ $('AI Agent1').item.json.output.updatedState.property_type }}",
+            "city": "={{ $('AI Agent1').item.json.output.updatedState.city }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "property_type",
+              "displayName": "property_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "min_price",
+              "displayName": "min_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "max_price",
+              "displayName": "max_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "city",
+              "displayName": "city",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "state",
+              "displayName": "state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "availability",
+              "displayName": "availability",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "bedrooms",
+              "displayName": "bedrooms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "sessionid",
+              "displayName": "sessionid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -1504,
+        -752
+      ],
+      "id": "22ef98cb-ee94-49b7-8973-9a9613f39ea1",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('AI Agent1').item.json.output }}",
+        "options": {
+          "systemMessage": "=You are a smart data filter assistant.\n\nYou will receive a JSON object containing a state with various property search filters. Your job is to extract ONLY the fields that have meaningful values — skip any field that is 0, 0.0, or an empty string \"\".\n\nRules:\n- If a field's value is 0 or \"\" — EXCLUDE it\n- If a field's value is a non-empty string or a number greater than 0 — INCLUDE it\n- Always include the \"action\" field regardless of its value\n- Return the filtered result as a clean JSON object\n\nExample Input:\n{\n  \"updatedState\": {\n    \"property_type\": \"Apartment\",\n    \"min_price\": 0,\n    \"max_price\": 0,\n    \"city\": \"Swat\",\n    \"state\": \"\",\n    \"availability\": \"\",\n    \"bedrooms\": 0\n  },\n  \"action\": \"search_db\"\n}\n\nExample Output:\n{\n  \"property_type\": \"Apartment\",\n  \"city\": \"Swat\",\n  \"action\": \"search_db\"\n}\n\nNow process the following input and return only the filtered JSON:"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2064,
+        -800
+      ],
+      "id": "367414ce-33a5-4283-91f3-ec9be7e4c3e6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Raw output from the agent\nconst raw = $input.first().json.output;\n\n// Step 1: Clean the markdown backticks and parse JSON\nconst cleaned = raw.replace(/```json|```/g, '').trim();\nconst parsed = JSON.parse(cleaned);\n\n// Step 2: Remove the \"action\" field — keep only property filters\nconst { action, ...filters } = parsed;\n\n// Step 3: Return only meaningful fields dynamically\nreturn [{\n  json: filters\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1744,
+        -768
+      ],
+      "id": "968ab135-bf56-41fb-b6bc-a68e8f25b009",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const weather = $input.first().json;\n\nconst location = weather.location;\nconst current = weather.current;\n\n// Air quality index labels\nconst epaLabels = {\n  1: '😊 Good',\n  2: '😐 Moderate', \n  3: '😷 Unhealthy for Sensitive Groups',\n  4: '🤢 Unhealthy',\n  5: '☠️ Very Unhealthy',\n  6: '💀 Hazardous'\n};\n\nconst epaIndex = current.air_quality?.['us-epa-index'] || 1;\n\nlet msg = `🌤️ Weather in ${location.name}, ${location.region}, ${location.country}\\n`;\nmsg += `📅 Local Time: ${location.localtime}\\n\\n`;\n\nmsg += `🌡️ Temperature: ${current.temp_c}°C / ${current.temp_f}°F\\n`;\nmsg += `🤔 Feels Like: ${current.feelslike_c}°C / ${current.feelslike_f}°F\\n`;\nmsg += `☁️ Condition: ${current.condition.text}\\n`;\nmsg += `💧 Humidity: ${current.humidity}%\\n`;\nmsg += `🌬️ Wind: ${current.wind_kph} km/h ${current.wind_dir}\\n`;\nmsg += `🌧️ Precipitation: ${current.precip_mm} mm\\n`;\nmsg += `👁️ Visibility: ${current.vis_km} km\\n`;\nmsg += `☀️ UV Index: ${current.uv}\\n`;\nmsg += `🌫️ Cloud Cover: ${current.cloud}%\\n\\n`;\n\nmsg += `💨 Air Quality:\\n`;\nmsg += `   Overall: ${epaLabels[epaIndex]}\\n`;\nmsg += `   PM2.5: ${current.air_quality.pm2_5} μg/m³\\n`;\nmsg += `   PM10: ${current.air_quality.pm10} μg/m³\\n`;\nmsg += `   CO: ${current.air_quality.co} μg/m³\\n`;\nmsg += `   O3: ${current.air_quality.o3} μg/m³\\n\\n`;\n\nmsg += `🕐 Last Updated: ${current.last_updated}`;\n\nreturn [{\n  json: {\n    output: msg\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1472,
+        -1120
+      ],
+      "id": "bb6b9400-8477-455f-92bf-cdfede290052",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rowData = $('Get row(s)').first().json;\nconst cityName = rowData.city || '';\nconst minPrice = rowData.min_price || 0;\nconst maxPrice = rowData.max_price || 0;\n\nlet missing = [];\nif (!cityName) missing.push('city');\nif (minPrice === 0) missing.push('minimum price');\nif (maxPrice === 0) missing.push('maximum price');\n\nconst msg = `Please add your ${missing.join(', ')} to search for properties.`;\n\nreturn [{ json: { text: msg } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        -720
+      ],
+      "id": "c02cca24-5607-40a6-9883-3d5b47a991bd",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -2032,
+        -672
+      ],
+      "id": "aa1845f2-0979-4de0-b23e-bb78f8b0f0f0",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "bypGl1IKVkXEnLFS",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "xrxpA0AlliC41G27",
+          "mode": "list",
+          "cachedResultName": "cache",
+          "cachedResultUrl": "/projects/tyOEkyXQIVzg4fAP/datatables/xrxpA0AlliC41G27"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "property_type",
+              "displayName": "property_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "min_price",
+              "displayName": "min_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "max_price",
+              "displayName": "max_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "city",
+              "displayName": "city",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "state",
+              "displayName": "state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "availability",
+              "displayName": "availability",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "bedrooms",
+              "displayName": "bedrooms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "sessionid",
+              "displayName": "sessionid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -2336,
+        -736
+      ],
+      "id": "fa7c107a-1346-45e8-80e1-d5f0709999ff",
+      "name": "Insert row",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## 📥 Entry Point — Receives chat message\n## 🧠 Load State — Session state & cache\n## 🤖 AI Agent1 — Extracts filters & intent\n## 📋 Schema — Strict JSON output\n## ⚡ LLM1 — Powers AI Agent1\n## 📊 Fetch Row — Gets session from Data Table\n## 🔀 Session Check — Exists → Switch / New → Insert\n## ➕ Create Session — New row with empty defaults\n## 🔁 Action Router — Weather or DB Search\n## 🌤️ Weather API — Fetches current weather\n## 🌡️ Format Weather — Weather → readable message\n## 🔍 Filter Agent — Removes empty/zero fields\n## ⚡ LLM2 — Powers Filter Agent\n## 🧹 Clean Filters — Returns meaningful fields only\n## 💾 Save State — Updates row with new filters\n## ✅ Validate — All filled → DB / Missing → Ask\n## 🗄️ Query & Format — Search DB → Top 3 results\n## ⚠️ Missing Fields — Asks user for missing info",
+        "height": 1200,
+        "width": 2704,
+        "color": "#2E5461"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3072,
+        -1712
+      ],
+      "typeVersion": 1,
+      "id": "592e3761-7f02-40a8-bf06-586f910ccda8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## 📥 Entry Point\nReceives user chat message",
+        "height": 240,
+        "width": 304,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2400,
+        -1648
+      ],
+      "typeVersion": 1,
+      "id": "fff24319-1141-4791-9e19-d3c571a45649",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 Load Session State\nLoads session state & cache from static data",
+        "height": 272,
+        "width": 304,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1952,
+        -1664
+      ],
+      "typeVersion": 1,
+      "id": "d2aa743f-b9c5-44d1-a98f-aff069b0d310",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## 🤖 Intent Detector\nExtracts property filters & detects intent\n(search_db / get_weather)",
+        "height": 400,
+        "width": 336,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1488,
+        -1664
+      ],
+      "typeVersion": 1,
+      "id": "d3e066c2-9097-4084-8573-724abdcd51b5",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## 📊 Fetch Session Row\nFetches current session row from Data Table",
+        "height": 224,
+        "width": 288,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -992,
+        -1632
+      ],
+      "typeVersion": 1,
+      "id": "903df212-3dd1-4d58-9302-790c02f0ec2a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## 🔀 Session Check\nYES → Route to Switch\nNO  → Insert new row",
+        "height": 224,
+        "width": 256,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2400,
+        -1216
+      ],
+      "typeVersion": 1,
+      "id": "9ed0cb56-eb2f-4dd4-b4e3-c520784647c1",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## 🔁 Action Router\nget_weather → Weather API\nsearch_db   → DB Search",
+        "height": 224,
+        "width": 256,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2128,
+        -1216
+      ],
+      "typeVersion": 1,
+      "id": "32a5e105-787d-421e-b3d4-353faf72cdbe",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## 🌤️ Weather API\nCalls WeatherAPI to fetch current weather data",
+        "height": 224,
+        "width": 256,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1840,
+        -1216
+      ],
+      "typeVersion": 1,
+      "id": "189a0922-67a5-4c92-8bac-3d9e2683eb60",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## 🌡️ Format Weather\nFormats weather API response into readable chat message",
+        "height": 224,
+        "width": 256,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1552,
+        -1216
+      ],
+      "typeVersion": 1,
+      "id": "1ba05ee2-1b96-40c3-b793-5e7bb3cfe714",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## ➕ Create Session\nCreates new session row with empty default state",
+        "height": 224,
+        "width": 256,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2416,
+        -832
+      ],
+      "typeVersion": 1,
+      "id": "eea7d01a-fea9-4b02-8ad9-e41aed60d2a1",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## 🔍 Filter Assistant\nFilters out empty/zero fields from updatedState",
+        "height": 352,
+        "width": 256,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2096,
+        -912
+      ],
+      "typeVersion": 1,
+      "id": "1592d7b5-0090-4b62-a5f2-c7814af65b56",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## 🧹 Clean Filters\nStrips action field\nReturns only meaningful filter fields",
+        "height": 352,
+        "width": 256,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1840,
+        -912
+      ],
+      "typeVersion": 1,
+      "id": "c20f16e0-ee61-4f02-88d0-827881ef4581",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## 💾 Save State\nUpdates session row with new filter values",
+        "height": 352,
+        "width": 256,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1584,
+        -912
+      ],
+      "typeVersion": 1,
+      "id": "1e5e2fc4-4fa2-434c-8344-a6658b166503",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## ✅ Validate Fields\nAll filled → DB / Missing → Ask",
+        "height": 352,
+        "width": 256,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1328,
+        -912
+      ],
+      "typeVersion": 1,
+      "id": "a86f1367-d0f3-496f-aa06-a63b7d2e953c",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## ⚠️ Missing Fields\nTells user which required fields\nare still missing",
+        "height": 224,
+        "width": 288,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -880,
+        -800
+      ],
+      "typeVersion": 1,
+      "id": "295510e5-0303-4f18-812f-8dc5246c53f5",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "## 🗄️ Query & Format Results\nSearches properties table with filters\nReturns top 3 matching results\nFormats into friendly chat message",
+        "height": 288,
+        "width": 544,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1024,
+        -1184
+      ],
+      "typeVersion": 1,
+      "id": "e069ded8-2f75-4614-b85a-d13c216b62bd",
+      "name": "Sticky Note15"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Load State2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Weather API2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Get Weather API2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is DB Search?2": {
+      "main": [
+        [
+          {
+            "node": "Query Supabase2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Supabase2": {
+      "main": [
+        [
+          {
+            "node": "Format Property Reply2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Property Reply2": {
+      "main": [
+        []
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Load State2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)": {
+      "main": [
+        [
+          {
+            "node": "Is DB Search?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6d001bda-c222-44d0-b6ff-ed0e16f4571b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2699954001a7aa8bcc5b8fbc7d470ae29511acf4ac1e995167cd70bb3b8ebe37"
+  },
+  "id": "frjONm7apK8ievjL",
+  "tags": []
+}
